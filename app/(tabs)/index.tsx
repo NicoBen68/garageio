@@ -79,9 +79,8 @@ export default function VehiclesScreen() {
               : `${vehicles.length} véhicule${vehicles.length > 1 ? 's' : ''}`}
           </Text>
         </View>
-        <TouchableOpacity
-          style={styles.addBtn}
-          onPress={() => router.push('/(tabs)/add-vehicle')}
+        <TouchableOpacity 
+          style={styles.card}
         >
           <Text style={styles.addBtnText}>＋</Text>
         </TouchableOpacity>
@@ -110,7 +109,7 @@ export default function VehiclesScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3B82F6" />
           }
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.card}>
+            <TouchableOpacity style={styles.card} onPress={() => router.push(`/(tabs)/vehicle/${item.id}`)}>
               <View style={styles.cardTop}>
                 <View>
                   <Text style={styles.cardBrand}>{item.brand}</Text>
