@@ -83,12 +83,61 @@ export default function AddMaintenanceScreen() {
       notes:                notes      || null,
     });
 
+    const createReminder = async (typeId: string, performedDate: string, mileageAtService: number | null) => {
+    const { data: type } = await supabase
+      .from('maintenance_types')
+      .select('default_interval_months, default_interval_km')
+      .eq('id', typeId)
+      .single();
+
+    if (!type) return;
+
+    let nextDueDate = null;
+    let nextDueMileage = null;
+
+    if (type.default_interval_months) {
+      const date = new Date(performedDate);
+      date.setMonth(date.getMonth() + type.default_interval_months);
+      nextDueDate = date.toISOString().split('T')[0];
+    }
+
+    if (type.default_interval_km && mileageAtService) {
+      nextDueMileage = mileageAtService + type.default_interval_km;
+    }
+
+    if (!nextDueDate && !nextDueMileage) return;
+
+    // Supprime l'ancien rappel pour ce véhicule/type si existe
+    await supabase
+      .from('reminders')
+      .delete()
+      .eq('vehicle_id', id)
+      .eq('maintenance_type_id', typeId)
+      .in('status', ['active', 'snoozed']);
+
+    // Crée le nouveau rappel
+    await supabase.from('reminders').insert({
+      vehicle_id:           id,
+      maintenance_type_id:  typeId,
+      next_due_date:        nextDueDate,
+      next_due_mileage:     nextDueMileage,
+      status:               'active',
+    });
+  };
+
     setSaving(false);
 
     if (error) {
       Alert.alert('Erreur', error.message);
       return;
     }
+
+    await createReminder(
+    selectedType.id,
+    performedAt,
+    mileage ? parseInt(mileage) : null
+  );
+router.back();
 
     router.back();
   };
