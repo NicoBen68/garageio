@@ -55,6 +55,14 @@ export default function TabsLayout() {
         name="vehicle/[id]"
         options={{ href: null }}
       />
+      <Tabs.Screen
+      name="vehicle/[id]/maintenance"
+      options={{ href: null }}
+    />
+    <Tabs.Screen
+      name="vehicle/[id]/add-maintenance"
+      options={{ href: null }}
+    />
     </Tabs>
   );
 }

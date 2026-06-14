@@ -238,6 +238,13 @@ export default function VehicleDetailScreen() {
           </View>
         )}
 
+        <TouchableOpacity
+          style={styles.maintenanceBtn}
+          onPress={() => router.push(`/(tabs)/vehicle/${id}/maintenance`)}
+        >
+          <Text style={styles.maintenanceBtnText}>🔧 Voir le carnet d'entretien</Text>
+        </TouchableOpacity>
+
         {/* Archiver */}
         <TouchableOpacity style={styles.archiveBtn} onPress={handleArchive}>
           <Text style={styles.archiveBtnText}>Archiver ce véhicule</Text>
@@ -283,4 +290,6 @@ const styles = StyleSheet.create({
   infoValue:       { color: '#F8FAFC', fontSize: 14, fontWeight: '500' },
   archiveBtn:      { borderWidth: 1, borderColor: '#EF4444', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
   archiveBtnText:  { color: '#EF4444', fontSize: 15, fontWeight: '500' },
+  maintenanceBtn:     { backgroundColor: '#1E293B', borderRadius: 12, paddingVertical: 14, alignItems: 'center', borderWidth: 1, borderColor: '#334155' },
+  maintenanceBtnText: { color: '#F8FAFC', fontSize: 15, fontWeight: '600' },
 });
