@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
+import { registerForPushNotifications } from '../lib/notifications';
 
 export default function RootLayout() {
   const { session, setSession, setLoading } = useAuthStore();
@@ -16,7 +17,12 @@ export default function RootLayout() {
 
     // Écoute les changements de session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => setSession(session)
+      async (_event, session) => {
+        setSession(session);
+        if (session?.user) {
+          await registerForPushNotifications(session.user.id);
+        }
+      }
     );
 
     return () => subscription.unsubscribe();
@@ -24,7 +30,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     const inAuthGroup = segments[0] === '(auth)';
-
     if (!session && !inAuthGroup) {
       router.replace('/(auth)/login');
     } else if (session && inAuthGroup) {

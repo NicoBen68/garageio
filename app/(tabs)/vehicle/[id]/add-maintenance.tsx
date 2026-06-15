@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../../../lib/supabase';
+import { extractInvoiceData, pickInvoiceFromGallery, takeInvoicePhoto, pickInvoiceDocument } from '../../../../lib/ocr';
 
 interface MaintenanceType {
   id:        string;
@@ -36,6 +37,7 @@ export default function AddMaintenanceScreen() {
   const [saving,       setSaving]       = useState(false);
   const [loadingTypes, setLoadingTypes] = useState(true);
   const [step,         setStep]         = useState<'type' | 'details'>('type');
+  const [scanning,     setScanning]     = useState(false);
 
   useEffect(() => {
     fetchTypes();
@@ -60,6 +62,45 @@ export default function AddMaintenanceScreen() {
       .single();
     if (data?.current_mileage) setMileage(String(data.current_mileage));
   };
+
+ const handleScanInvoice = () => {
+  Alert.alert(
+    '📸 Scanner une facture',
+    'Comment veux-tu importer ta facture ?',
+    [
+      { text: 'Annuler', style: 'cancel' },
+      { text: '📷 Prendre une photo',  onPress: () => scanInvoice('camera')   },
+      { text: '🖼️ Depuis la galerie',  onPress: () => scanInvoice('gallery')  },
+      { text: '📄 Fichier / PDF',       onPress: () => scanInvoice('document') },
+    ]
+  );
+};
+
+const scanInvoice = async (source: 'camera' | 'gallery' | 'document') => {
+  setScanning(true);
+  const base64 = source === 'camera'
+    ? await takeInvoicePhoto()
+    : source === 'gallery'
+    ? await pickInvoiceFromGallery()
+    : await pickInvoiceDocument();
+
+  if (!base64) { setScanning(false); return; }
+
+  const invoiceData = await extractInvoiceData(base64);
+  setScanning(false);
+
+  if (!invoiceData) {
+    Alert.alert('Erreur', 'Impossible de lire la facture. Remplis les champs manuellement.');
+    return;
+  }
+
+  if (invoiceData.date)       setPerformedAt(invoiceData.date);
+  if (invoiceData.amount)     setAmount(String(invoiceData.amount));
+  if (invoiceData.garageName) setGarageName(invoiceData.garageName);
+  if (invoiceData.notes)      setNotes(invoiceData.notes);
+
+  Alert.alert('✅ Facture scannée !', 'Les champs ont été remplis automatiquement. Vérifie et corrige si besoin.');
+};
 
   const createReminder = async (typeId: string, performedDate: string, mileageAtService: number | null) => {
     const { data: type } = await supabase
@@ -238,6 +279,17 @@ export default function AddMaintenanceScreen() {
           <Text style={styles.selectedTypeName}>{selectedType?.name}</Text>
         </View>
 
+        <TouchableOpacity
+          style={[styles.scanBtn, scanning && styles.btnDisabled]}
+          onPress={handleScanInvoice}
+          disabled={scanning}
+        >
+          {scanning
+            ? <ActivityIndicator color="#fff" size="small" />
+            : <Text style={styles.scanBtnText}>📸 Scanner une facture</Text>
+          }
+        </TouchableOpacity>
+
         <View style={styles.field}>
           <Text style={styles.label}>Date *</Text>
           <TextInput style={styles.input} value={performedAt} onChangeText={setPerformedAt} placeholder="AAAA-MM-JJ" placeholderTextColor="#475569" />
@@ -296,4 +348,6 @@ const styles = StyleSheet.create({
   saveBtn:           { backgroundColor: '#3B82F6', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 16 },
   btnDisabled:       { opacity: 0.5 },
   saveBtnText:       { color: '#fff', fontSize: 16, fontWeight: '700' },
+  scanBtn:     { backgroundColor: '#0F4C35', borderRadius: 10, paddingVertical: 12, alignItems: 'center', borderWidth: 1, borderColor: '#166534', marginBottom: 16 },
+  scanBtnText: { color: '#34D399', fontSize: 14, fontWeight: '600' },
 });
