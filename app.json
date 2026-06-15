@@ -2,17 +2,23 @@
   "expo": {
     "name": "garageio",
     "slug": "garageio",
+    "scheme": "garageio",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "icon": "./assets/icon.png",
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nicoben68.garageio",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundColor": "#0D1B2E",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
@@ -24,7 +30,14 @@
     "plugins": [
       "expo-router",
       "expo-status-bar",
-      "expo-secure-store"
-    ]
+      "expo-secure-store",
+      "expo-font"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3a164296-2029-48ef-bce9-498569a1bb8a"
+      }
+    }
   }
 }
