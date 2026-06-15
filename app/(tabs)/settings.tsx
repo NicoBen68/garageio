@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  Alert, ScrollView, ActivityIndicator,
+  Alert, ScrollView, ActivityIndicator, Switch,
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
@@ -15,24 +15,21 @@ interface UserProfile {
 
 export default function SettingsScreen() {
   const { user, signOut } = useAuthStore();
-  const [profile,  setProfile]  = useState<UserProfile | null>(null);
-  const [loading,  setLoading]  = useState(true);
-  const [vehicles, setVehicles] = useState(0);
-  const [records,  setRecords]  = useState(0);
+  const [profile,       setProfile]       = useState<UserProfile | null>(null);
+  const [loading,       setLoading]       = useState(true);
+  const [vehicles,      setVehicles]      = useState(0);
+  const [records,       setRecords]       = useState(0);
+  const [notifEnabled,  setNotifEnabled]  = useState(true);
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+  useEffect(() => { fetchProfile(); }, []);
 
   const fetchProfile = async () => {
     const [profileRes, vehiclesRes] = await Promise.all([
       supabase.from('users').select('*').eq('id', user!.id).single(),
       supabase.from('vehicles').select('id', { count: 'exact' }).eq('user_id', user!.id).eq('is_archived', false),
     ]);
-
     if (profileRes.data) setProfile(profileRes.data);
     if (vehiclesRes.count !== null) setVehicles(vehiclesRes.count);
-
     if (vehiclesRes.data) {
       const vehicleIds = vehiclesRes.data.map((v: any) => v.id);
       if (vehicleIds.length > 0) {
@@ -43,8 +40,65 @@ export default function SettingsScreen() {
         if (count !== null) setRecords(count);
       }
     }
-
     setLoading(false);
+  };
+
+  const handleEditName = () => {
+    Alert.prompt(
+      'Modifier mon nom',
+      'Saisis ton nouveau nom',
+      async (name) => {
+        if (!name?.trim()) return;
+        const { error } = await supabase
+          .from('users')
+          .update({ full_name: name.trim() })
+          .eq('id', user!.id);
+        if (!error) {
+          setProfile(prev => prev ? { ...prev, full_name: name.trim() } : prev);
+          Alert.alert('✅ Nom mis à jour !');
+        }
+      },
+      'plain-text',
+      profile?.full_name ?? ''
+    );
+  };
+
+  const handleEditEmail = () => {
+    Alert.prompt(
+      'Modifier mon email',
+      'Saisis ton nouvel email',
+      async (email) => {
+        if (!email?.trim()) return;
+        const { error } = await supabase.auth.updateUser({ email: email.trim() });
+        if (!error) {
+          Alert.alert('✅ Email mis à jour !', 'Un email de confirmation t\'a été envoyé.');
+        } else {
+          Alert.alert('Erreur', error.message);
+        }
+      },
+      'plain-text',
+      profile?.email ?? ''
+    );
+  };
+
+  const handleChangePassword = () => {
+    Alert.prompt(
+      'Nouveau mot de passe',
+      'Saisis ton nouveau mot de passe (8 caractères minimum)',
+      async (password) => {
+        if (!password || password.length < 8) {
+          Alert.alert('Erreur', 'Le mot de passe doit faire au moins 8 caractères.');
+          return;
+        }
+        const { error } = await supabase.auth.updateUser({ password });
+        if (!error) {
+          Alert.alert('✅ Mot de passe mis à jour !');
+        } else {
+          Alert.alert('Erreur', error.message);
+        }
+      },
+      'secure-text'
+    );
   };
 
   const handleSignOut = () => {
@@ -74,11 +128,7 @@ export default function SettingsScreen() {
   };
 
   if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator color="#3B82F6" size="large" />
-      </View>
-    );
+    return <View style={styles.centered}><ActivityIndicator color="#3B82F6" size="large" /></View>;
   }
 
   const isPremium = profile?.subscription_status === 'premium';
@@ -89,17 +139,17 @@ export default function SettingsScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.inner}>
 
+      {/* Avatar */}
       <View style={styles.avatarBlock}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {profile?.full_name?.charAt(0).toUpperCase() ?? '?'}
-          </Text>
+          <Text style={styles.avatarText}>{profile?.full_name?.charAt(0).toUpperCase() ?? '?'}</Text>
         </View>
         <Text style={styles.name}>{profile?.full_name}</Text>
         <Text style={styles.email}>{profile?.email}</Text>
         <Text style={styles.memberSince}>Membre depuis {memberSince}</Text>
       </View>
 
+      {/* Stats */}
       <View style={styles.statsRow}>
         <View style={styles.statCard}>
           <Text style={styles.statValue}>{vehicles}</Text>
@@ -117,6 +167,7 @@ export default function SettingsScreen() {
         </View>
       </View>
 
+      {/* Premium banner */}
       {!isPremium && (
         <TouchableOpacity style={styles.premiumBanner}>
           <View>
@@ -127,29 +178,60 @@ export default function SettingsScreen() {
         </TouchableOpacity>
       )}
 
+      {/* Compte */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Compte</Text>
         <View style={styles.menuCard}>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={styles.menuItem} onPress={handleEditName}>
             <Text style={styles.menuItemIcon}>👤</Text>
-            <Text style={styles.menuItemLabel}>Modifier mon profil</Text>
+            <View style={styles.menuItemCenter}>
+              <Text style={styles.menuItemLabel}>Nom</Text>
+              <Text style={styles.menuItemValue}>{profile?.full_name}</Text>
+            </View>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
+
           <View style={styles.menuDivider} />
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuItemIcon}>🔔</Text>
-            <Text style={styles.menuItemLabel}>Notifications</Text>
+
+          <TouchableOpacity style={styles.menuItem} onPress={handleEditEmail}>
+            <Text style={styles.menuItemIcon}>📧</Text>
+            <View style={styles.menuItemCenter}>
+              <Text style={styles.menuItemLabel}>Email</Text>
+              <Text style={styles.menuItemValue}>{profile?.email}</Text>
+            </View>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
+
           <View style={styles.menuDivider} />
-          <TouchableOpacity style={styles.menuItem}>
+
+          <TouchableOpacity style={styles.menuItem} onPress={handleChangePassword}>
             <Text style={styles.menuItemIcon}>🔒</Text>
-            <Text style={styles.menuItemLabel}>Changer mon mot de passe</Text>
+            <View style={styles.menuItemCenter}>
+              <Text style={styles.menuItemLabel}>Mot de passe</Text>
+              <Text style={styles.menuItemValue}>••••••••</Text>
+            </View>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
+
+          <View style={styles.menuDivider} />
+
+          <View style={styles.menuItem}>
+            <Text style={styles.menuItemIcon}>🔔</Text>
+            <View style={styles.menuItemCenter}>
+              <Text style={styles.menuItemLabel}>Notifications</Text>
+              <Text style={styles.menuItemValue}>{notifEnabled ? 'Activées' : 'Désactivées'}</Text>
+            </View>
+            <Switch
+              value={notifEnabled}
+              onValueChange={setNotifEnabled}
+              trackColor={{ false: '#334155', true: '#3B82F6' }}
+              thumbColor="#fff"
+            />
+          </View>
         </View>
       </View>
 
+      {/* App */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Application</Text>
         <View style={styles.menuCard}>
@@ -212,7 +294,9 @@ const styles = StyleSheet.create({
   menuCard:           { backgroundColor: '#1E293B', borderRadius: 14, borderWidth: 1, borderColor: '#334155', overflow: 'hidden' },
   menuItem:           { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
   menuItemIcon:       { fontSize: 18, width: 24 },
-  menuItemLabel:      { flex: 1, fontSize: 15, color: '#CBD5E1' },
+  menuItemCenter:     { flex: 1 },
+  menuItemLabel:      { fontSize: 13, color: '#64748B' },
+  menuItemValue:      { fontSize: 15, color: '#CBD5E1', marginTop: 1 },
   menuItemArrow:      { fontSize: 18, color: '#475569' },
   menuDivider:        { height: 1, backgroundColor: '#334155', marginLeft: 50 },
   signOutBtn:         { backgroundColor: '#1E293B', borderRadius: 12, paddingVertical: 14, alignItems: 'center', borderWidth: 1, borderColor: '#334155' },
