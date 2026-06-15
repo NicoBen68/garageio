@@ -10,9 +10,18 @@ export default function RootLayout() {
   const segments = useSegments();
 
   useEffect(() => {
+    // Timeout de sécurité — évite la roue infinie
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 5000);
+
     // Récupère la session existante au démarrage
     supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(timeout);
       setSession(session);
+    }).catch(() => {
+      clearTimeout(timeout);
+      setLoading(false);
     });
 
     // Écoute les changements de session
@@ -25,7 +34,10 @@ export default function RootLayout() {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {

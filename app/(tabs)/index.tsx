@@ -79,8 +79,9 @@ export default function VehiclesScreen() {
               : `${vehicles.length} véhicule${vehicles.length > 1 ? 's' : ''}`}
           </Text>
         </View>
-        <TouchableOpacity 
-          style={styles.card}
+        <TouchableOpacity
+          style={styles.addBtn}
+          onPress={() => router.push('/(tabs)/add-vehicle')}
         >
           <Text style={styles.addBtnText}>＋</Text>
         </TouchableOpacity>
