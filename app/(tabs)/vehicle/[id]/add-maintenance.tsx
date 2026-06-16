@@ -27,17 +27,18 @@ export default function AddMaintenanceScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuthStore();
 
-  const [types,        setTypes]        = useState<MaintenanceType[]>([]);
-  const [selectedType, setSelectedType] = useState<MaintenanceType | null>(null);
-  const [performedAt,  setPerformedAt]  = useState(new Date().toISOString().split('T')[0]);
-  const [mileage,      setMileage]      = useState('');
-  const [amount,       setAmount]       = useState('');
-  const [garageName,   setGarageName]   = useState('');
-  const [notes,        setNotes]        = useState('');
-  const [saving,       setSaving]       = useState(false);
-  const [loadingTypes, setLoadingTypes] = useState(true);
-  const [step,         setStep]         = useState<'type' | 'details'>('type');
-  const [scanning,     setScanning]     = useState(false);
+  const [types,          setTypes]          = useState<MaintenanceType[]>([]);
+  const [selectedType,   setSelectedType]   = useState<MaintenanceType | null>(null);
+  const [performedAt,    setPerformedAt]    = useState(new Date().toISOString().split('T')[0]);
+  const [mileage,        setMileage]        = useState('');
+  const [amount,         setAmount]         = useState('');
+  const [garageName,     setGarageName]     = useState('');
+  const [notes,          setNotes]          = useState('');
+  const [saving,         setSaving]         = useState(false);
+  const [loadingTypes,   setLoadingTypes]   = useState(true);
+  const [step,           setStep]           = useState<'type' | 'details'>('type');
+  const [scanning,       setScanning]       = useState(false);
+  const [currentMileage, setCurrentMileage] = useState('');
 
   useEffect(() => {
     fetchTypes();
@@ -60,72 +61,67 @@ export default function AddMaintenanceScreen() {
       .select('current_mileage')
       .eq('id', id)
       .single();
-    if (data?.current_mileage) setMileage(String(data.current_mileage));
+    if (data?.current_mileage) {
+      setMileage(String(data.current_mileage));
+      setCurrentMileage(String(data.current_mileage));
+    }
   };
 
- const handleScanInvoice = () => {
-  Alert.alert(
-    '📸 Scanner une facture',
-    'Comment veux-tu importer ta facture ?',
-    [
-      { text: 'Annuler', style: 'cancel' },
-      { text: '📷 Prendre une photo',  onPress: () => scanInvoice('camera')   },
-      { text: '🖼️ Depuis la galerie',  onPress: () => scanInvoice('gallery')  },
-      { text: '📄 Fichier / PDF',       onPress: () => scanInvoice('document') },
-    ]
-  );
-};
+  const resetFields = () => {
+    setPerformedAt(new Date().toISOString().split('T')[0]);
+    setMileage(currentMileage);
+    setAmount('');
+    setGarageName('');
+    setNotes('');
+  };
 
-const scanInvoice = async (source: 'camera' | 'gallery' | 'document') => {
-  setScanning(true);
-  const base64 = source === 'camera'
-    ? await takeInvoicePhoto()
-    : source === 'gallery'
-    ? await pickInvoiceFromGallery()
-    : await pickInvoiceDocument();
+  const selectType = (type: MaintenanceType) => {
+    setSelectedType(type);
+    resetFields();
+    setStep('details');
+  };
 
-  if (!base64) { setScanning(false); return; }
+  const handleScanInvoice = () => {
+    Alert.alert(
+      '📸 Scanner une facture',
+      'Comment veux-tu importer ta facture ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: '📷 Prendre une photo',  onPress: () => scanInvoice('camera')   },
+        { text: '🖼️ Depuis la galerie',  onPress: () => scanInvoice('gallery')  },
+        { text: '📄 Fichier / PDF',       onPress: () => scanInvoice('document') },
+      ]
+    );
+  };
 
-  const invoiceData = await extractInvoiceData(base64);
-  setScanning(false);
+  const scanInvoice = async (source: 'camera' | 'gallery' | 'document') => {
+    setScanning(true);
+    const base64 = source === 'camera'
+      ? await takeInvoicePhoto()
+      : source === 'gallery'
+      ? await pickInvoiceFromGallery()
+      : await pickInvoiceDocument();
 
-  if (!invoiceData) {
-    Alert.alert('Erreur', 'Impossible de lire la facture. Remplis les champs manuellement.');
-    return;
-  }
+    if (!base64) { setScanning(false); return; }
 
-  if (invoiceData.date)       setPerformedAt(invoiceData.date);
-  if (invoiceData.amount)     setAmount(String(invoiceData.amount));
-  if (invoiceData.garageName) setGarageName(invoiceData.garageName);
-  if (invoiceData.notes)      setNotes(invoiceData.notes);
+    const invoiceData = await extractInvoiceData(base64);
+    setScanning(false);
 
-  Alert.alert('✅ Facture scannée !', 'Les champs ont été remplis automatiquement. Vérifie et corrige si besoin.');
-};
-
-  const createReminder = async (typeId: string, performedDate: string, mileageAtService: number | null) => {
-    const { data: type } = await supabase
-      .from('maintenance_types')
-      .select('default_interval_months, default_interval_km')
-      .eq('id', typeId)
-      .single();
-
-    if (!type) return;
-
-    let nextDueDate = null;
-    let nextDueMileage = null;
-
-    if (type.default_interval_months) {
-      const date = new Date(performedDate);
-      date.setMonth(date.getMonth() + type.default_interval_months);
-      nextDueDate = date.toISOString().split('T')[0];
+    if (!invoiceData) {
+      Alert.alert('Erreur', 'Impossible de lire la facture. Remplis les champs manuellement.');
+      return;
     }
 
-    if (type.default_interval_km && mileageAtService) {
-      nextDueMileage = mileageAtService + type.default_interval_km;
-    }
+    if (invoiceData.date)       setPerformedAt(invoiceData.date);
+    if (invoiceData.amount)     setAmount(String(invoiceData.amount));
+    if (invoiceData.garageName) setGarageName(invoiceData.garageName);
+    if (invoiceData.notes)      setNotes(invoiceData.notes);
 
-    if (!nextDueDate && !nextDueMileage) return;
+    Alert.alert('✅ Facture scannée !', 'Les champs ont été remplis automatiquement. Vérifie et corrige si besoin.');
+  };
 
+  const saveReminder = async (typeId: string, customDate: string | null, mileageAtService: number | null, useAuto: boolean) => {
+    // Supprime l'ancien rappel
     await supabase
       .from('reminders')
       .delete()
@@ -133,13 +129,46 @@ const scanInvoice = async (source: 'camera' | 'gallery' | 'document') => {
       .eq('maintenance_type_id', typeId)
       .in('status', ['active', 'snoozed']);
 
-    await supabase.from('reminders').insert({
-      vehicle_id:          id,
-      maintenance_type_id: typeId,
-      next_due_date:       nextDueDate,
-      next_due_mileage:    nextDueMileage,
-      status:              'active',
-    });
+    if (useAuto) {
+      // Date auto depuis les intervalles du type
+      const { data: type } = await supabase
+        .from('maintenance_types')
+        .select('default_interval_months, default_interval_km')
+        .eq('id', typeId)
+        .single();
+
+      if (!type) return;
+
+      let nextDueDate = null;
+      let nextDueMileage = null;
+
+      if (type.default_interval_months) {
+        const date = new Date(performedAt);
+        date.setMonth(date.getMonth() + type.default_interval_months);
+        nextDueDate = date.toISOString().split('T')[0];
+      }
+      if (type.default_interval_km && mileageAtService) {
+        nextDueMileage = mileageAtService + type.default_interval_km;
+      }
+      if (!nextDueDate && !nextDueMileage) return;
+
+      await supabase.from('reminders').insert({
+        vehicle_id:          id,
+        maintenance_type_id: typeId,
+        next_due_date:       nextDueDate,
+        next_due_mileage:    nextDueMileage,
+        status:              'active',
+      });
+    } else if (customDate) {
+      // Date personnalisée
+      await supabase.from('reminders').insert({
+        vehicle_id:          id,
+        maintenance_type_id: typeId,
+        next_due_date:       customDate,
+        next_due_mileage:    null,
+        status:              'active',
+      });
+    }
   };
 
   const handleSave = async () => {
@@ -170,8 +199,64 @@ const scanInvoice = async (source: 'camera' | 'gallery' | 'document') => {
       return;
     }
 
-    await createReminder(selectedType.id, performedAt, mileage ? parseInt(mileage) : null);
-    router.back();
+    // Calcule la date auto recommandée
+    const { data: typeData } = await supabase
+      .from('maintenance_types')
+      .select('default_interval_months, default_interval_km')
+      .eq('id', selectedType.id)
+      .single();
+
+    const autoDate = typeData?.default_interval_months
+      ? (() => {
+          const d = new Date(performedAt);
+          d.setMonth(d.getMonth() + typeData.default_interval_months);
+          return d.toLocaleDateString('fr-FR');
+        })()
+      : null;
+
+    const autoKm = typeData?.default_interval_km && mileage
+      ? `${(parseInt(mileage) + typeData.default_interval_km).toLocaleString('fr-FR')} km`
+      : null;
+
+    const autoLabel = [autoDate, autoKm].filter(Boolean).join(' · ');
+
+    Alert.alert(
+      '🔔 Rappel prochain entretien',
+      autoLabel ? `Recommandé : ${autoLabel}` : 'Aucune date recommandée pour ce type.',
+      [
+        {
+          text: 'Sans rappel',
+          style: 'cancel',
+          onPress: () => router.back(),
+        },
+        ...(autoLabel ? [{
+          text: `✅ Auto (${autoLabel})`,
+          onPress: async () => {
+            await saveReminder(selectedType.id, null, mileage ? parseInt(mileage) : null, true);
+            router.back();
+          },
+        }] : []),
+        {
+          text: '📅 Date personnalisée',
+          onPress: () => {
+            Alert.prompt(
+              'Date du prochain rappel',
+              'Format JJ/MM/AAAA',
+              async (dateStr) => {
+                if (!dateStr?.trim()) { router.back(); return; }
+                const parts = dateStr.split('/');
+                if (parts.length === 3) {
+                  const isoDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+                  await saveReminder(selectedType.id, isoDate, null, false);
+                }
+                router.back();
+              },
+              'plain-text'
+            );
+          },
+        },
+      ]
+    );
   };
 
   const handleDeleteType = (type: MaintenanceType) => {
@@ -220,7 +305,7 @@ const scanInvoice = async (source: 'camera' | 'gallery' | 'document') => {
                   <TouchableOpacity
                     key={type.id}
                     style={[styles.typeCard, selectedType?.id === type.id && styles.typeCardActive]}
-                    onPress={() => { setSelectedType(type); setStep('details'); }}
+                    onPress={() => selectType(type)}
                     onLongPress={() => handleDeleteType(type)}
                   >
                     <Text style={[styles.typeName, selectedType?.id === type.id && styles.typeNameActive]}>
@@ -246,7 +331,11 @@ const scanInvoice = async (source: 'camera' | 'gallery' | 'document') => {
                         .insert({ name: name.trim(), category: 'autre', is_system: false, user_id: user!.id })
                         .select()
                         .single();
-                      if (data) { setSelectedType(data); setStep('details'); }
+                      if (data) {
+                        setSelectedType(data);
+                        resetFields();
+                        setStep('details');
+                      }
                     },
                     'plain-text'
                   );
@@ -348,6 +437,6 @@ const styles = StyleSheet.create({
   saveBtn:           { backgroundColor: '#3B82F6', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 16 },
   btnDisabled:       { opacity: 0.5 },
   saveBtnText:       { color: '#fff', fontSize: 16, fontWeight: '700' },
-  scanBtn:     { backgroundColor: '#0F4C35', borderRadius: 10, paddingVertical: 12, alignItems: 'center', borderWidth: 1, borderColor: '#166534', marginBottom: 16 },
-  scanBtnText: { color: '#34D399', fontSize: 14, fontWeight: '600' },
+  scanBtn:           { backgroundColor: '#0F4C35', borderRadius: 10, paddingVertical: 12, alignItems: 'center', borderWidth: 1, borderColor: '#166634', marginBottom: 16 },
+  scanBtnText:       { color: '#34D399', fontSize: 14, fontWeight: '600' },
 });
