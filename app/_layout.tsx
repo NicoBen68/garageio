@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { AppState } from 'react-native';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
@@ -10,12 +11,12 @@ export default function RootLayout() {
   const segments = useSegments();
 
   useEffect(() => {
-    // Timeout de sécurité — évite la roue infinie
+    // Timeout de sécurité — 10 secondes max
     const timeout = setTimeout(() => {
       setLoading(false);
-    }, 5000);
+    }, 10000);
 
-    // Récupère la session existante au démarrage
+    // Récupère la session au démarrage
     supabase.auth.getSession().then(({ data: { session } }) => {
       clearTimeout(timeout);
       setSession(session);
@@ -34,9 +35,19 @@ export default function RootLayout() {
       }
     );
 
+    // Rafraîchit la session quand l'app revient en foreground
+    const appStateSubscription = AppState.addEventListener('change', async (state) => {
+      if (state === 'active') {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session) setSession(session);
+        });
+      }
+    });
+
     return () => {
       clearTimeout(timeout);
       subscription.unsubscribe();
+      appStateSubscription.remove();
     };
   }, []);
 
