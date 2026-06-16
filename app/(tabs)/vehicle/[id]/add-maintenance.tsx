@@ -5,9 +5,11 @@ import {
   ScrollView, KeyboardAvoidingView, Platform,
   ActivityIndicator, Alert,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { supabase } from '../../../../lib/supabase';
 import { extractInvoiceData, pickInvoiceFromGallery, takeInvoicePhoto, pickInvoiceDocument } from '../../../../lib/ocr';
+import { useCallback } from 'react';
+
 
 interface MaintenanceType {
   id:        string;
@@ -41,9 +43,20 @@ export default function AddMaintenanceScreen() {
   const [currentMileage, setCurrentMileage] = useState('');
 
   useEffect(() => {
-    fetchTypes();
-    fetchCurrentMileage();
-  }, []);
+      fetchTypes();
+    }, []);
+
+    useFocusEffect(
+      useCallback(() => {
+        setSelectedType(null);
+        setPerformedAt(new Date().toISOString().split('T')[0]);
+        setAmount('');
+        setGarageName('');
+        setNotes('');
+        setStep('type');
+        fetchCurrentMileage();
+      }, [])
+    );
 
   const fetchTypes = async () => {
     const { data } = await supabase
