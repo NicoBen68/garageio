@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  Alert, ScrollView, ActivityIndicator, Switch,
+  Alert, ScrollView, ActivityIndicator, Switch, Linking,
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
+
 
 interface UserProfile {
   full_name:           string;
@@ -169,7 +170,8 @@ export default function SettingsScreen() {
 
       {/* Premium banner */}
       {!isPremium && (
-        <TouchableOpacity style={styles.premiumBanner}>
+        <TouchableOpacity style={styles.premiumBanner} onPress={() => Alert.alert('Bientôt disponible', 'Le module Premium arrive prochainement ! Suivi budgétaire et coût/km pour mieux gérer vos dépenses auto.')}>
+
           <View>
             <Text style={styles.premiumBannerTitle}>✨ Passer à Premium</Text>
             <Text style={styles.premiumBannerSub}>Suivi budgétaire · Coût/km · 3€/mois</Text>
@@ -235,19 +237,19 @@ export default function SettingsScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Application</Text>
         <View style={styles.menuCard}>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => Linking.openURL('https://apps.apple.com/app/id6780651856')}>
             <Text style={styles.menuItemIcon}>⭐</Text>
             <Text style={styles.menuItemLabel}>Noter l'application</Text>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
           <View style={styles.menuDivider} />
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => Linking.openURL('mailto:support@garageio.app')}>
             <Text style={styles.menuItemIcon}>📩</Text>
             <Text style={styles.menuItemLabel}>Nous contacter</Text>
             <Text style={styles.menuItemArrow}>›</Text>
           </TouchableOpacity>
           <View style={styles.menuDivider} />
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => Linking.openURL('https://raw.githubusercontent.com/NicoBen68/garageio/main/PRIVACY_POLICY.md')}>
             <Text style={styles.menuItemIcon}>📄</Text>
             <Text style={styles.menuItemLabel}>Politique de confidentialité</Text>
             <Text style={styles.menuItemArrow}>›</Text>
