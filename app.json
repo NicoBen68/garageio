@@ -16,11 +16,11 @@
       }
     },
     "android": {
+      "package": "com.nicoben68.garageio",
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundColor": "#0D1B2E",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "monochromeImage": "./assets/android-icon-monochrome.png",
+        "backgroundColor": "#0F172A"
       },
       "predictiveBackGestureEnabled": false
     },
@@ -31,8 +31,7 @@
       "expo-router",
       "expo-status-bar",
       "expo-secure-store",
-      "expo-font",
-      //"@stripe/stripe-react-native"
+      "expo-font"
     ],
     "extra": {
       "router": {},
