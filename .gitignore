@@ -8,4 +8,4 @@ build/
 *.env
 ios/
 android/
-EOFeas.json
+eas.json
