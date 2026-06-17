@@ -9,6 +9,7 @@ import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { supabase } from '../../../../lib/supabase';
 import { extractInvoiceData, pickInvoiceFromGallery, takeInvoicePhoto, pickInvoiceDocument } from '../../../../lib/ocr';
 import { useCallback } from 'react';
+import DatePickerField from '../../../../components/ui/DatePickerField';
 
 
 interface MaintenanceType {
@@ -392,10 +393,11 @@ export default function AddMaintenanceScreen() {
           }
         </TouchableOpacity>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>Date *</Text>
-          <TextInput style={styles.input} value={performedAt} onChangeText={setPerformedAt} placeholder="AAAA-MM-JJ" placeholderTextColor="#475569" />
-        </View>
+        <DatePickerField
+          label="Date *"
+          value={performedAt}
+          onChange={setPerformedAt}
+        />
 
         <View style={styles.field}>
           <Text style={styles.label}>Kilométrage au moment de l'intervention</Text>
