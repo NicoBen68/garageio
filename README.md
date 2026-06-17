@@ -15,11 +15,11 @@ GarageIO est une application mobile iOS/Android qui simplifie le suivi de l'entr
 - 📸 **OCR factures** — extraction automatique via Claude Vision (photo ou PDF)
 - 👤 **Multi-véhicules** — gère toute ta famille ou ta flotte
 - 📊 **Entretien global** — toutes les interventions de tous les véhicules
+- 🔔 **Notifications push** — rappels en temps réel
 
 ### Premium (à venir)
 - 💰 **Suivi budgétaire** — toutes tes dépenses par véhicule
 - 📈 **Coût réel au km** — calculé automatiquement depuis ton historique
-- 🔔 **Notifications push** — rappels en temps réel
 
 ---
 
@@ -146,6 +146,12 @@ eas build --platform ios --profile production
 eas submit --platform ios
 ```
 
+### Android
+```bash
+eas build --platform android --profile production
+eas submit --platform android
+```
+
 ---
 
 ## 🗺 Roadmap
@@ -158,10 +164,13 @@ eas submit --platform ios
 - [x] OCR factures (Claude Vision + PDF)
 - [x] Profil utilisateur éditable
 - [x] Notifications push
-- [x] Build iOS (EAS)
+- [x] Compatibilité Android (modales custom)
+- [x] Build iOS + TestFlight
+- [x] Soumission App Store Connect
+- [ ] Review Apple en cours ⏳
 - [ ] Module premium (Stripe)
-- [ ] Publication App Store / Google Play
-- [ ] Android build
+- [ ] Publication App Store
+- [ ] Android build + Google Play
 
 ---
 
