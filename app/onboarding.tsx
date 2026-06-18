@@ -1,10 +1,11 @@
 import { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  FlatList, Dimensions, Animated,
+  FlatList, Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useOnboardingStore } from '../store/onboardingStore';
 
 const { width } = Dimensions.get('window');
 
@@ -47,22 +48,28 @@ export default function OnboardingScreen() {
   const router  = useRouter();
   const flatRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { setOnboardingDone } = useOnboardingStore();
+
+  const completeOnboarding = async () => {
+    await AsyncStorage.setItem('onboarding_done', 'true');
+    setOnboardingDone(true);
+    // Le _layout va détecter onboardingDone = true et rediriger automatiquement
+  };
 
   const handleNext = async () => {
     if (currentIndex < SLIDES.length - 1) {
-      flatRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
-      setCurrentIndex(currentIndex + 1);
+      const next = currentIndex + 1;
+      flatRef.current?.scrollToIndex({ index: next, animated: true });
+      setCurrentIndex(next);
     } else {
-      await AsyncStorage.setItem('onboarding_done', 'true');
-      // Petite pause pour laisser le layout re-checker AsyncStorage
-      setTimeout(() => router.replace('/(auth)/login'), 100);
+      await completeOnboarding();
     }
   };
 
   const handleSkip = async () => {
-    await AsyncStorage.setItem('onboarding_done', 'true');
-    setTimeout(() => router.replace('/(auth)/login'), 100);
+    await completeOnboarding();
   };
+
   const slide = SLIDES[currentIndex];
 
   return (
@@ -85,12 +92,9 @@ export default function OnboardingScreen() {
         showsHorizontalScrollIndicator={false}
         renderItem={({ item }) => (
           <View style={[styles.slide, { width }]}>
-            {/* Illustration */}
             <View style={[styles.emojiContainer, { backgroundColor: item.accent + '20', borderColor: item.accent + '40' }]}>
               <Text style={styles.emoji}>{item.emoji}</Text>
             </View>
-
-            {/* Texte */}
             <Text style={styles.title}>{item.title}</Text>
             <Text style={styles.subtitle}>{item.subtitle}</Text>
           </View>
@@ -113,10 +117,7 @@ export default function OnboardingScreen() {
       </View>
 
       {/* Bouton */}
-      <TouchableOpacity
-        style={[styles.btn, { backgroundColor: slide.accent }]}
-        onPress={handleNext}
-      >
+      <TouchableOpacity style={[styles.btn, { backgroundColor: slide.accent }]} onPress={handleNext}>
         <Text style={styles.btnText}>
           {currentIndex === SLIDES.length - 1 ? 'Commencer 🚀' : 'Suivant →'}
         </Text>

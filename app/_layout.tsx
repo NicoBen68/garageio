@@ -1,26 +1,24 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect } from 'react';
 import { AppState } from 'react-native';
-import { Slot, useRouter, useSegments, useFocusEffect } from 'expo-router';
+import { Slot, useRouter, useSegments } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
+import { useOnboardingStore } from '../store/onboardingStore';
 import { registerForPushNotifications } from '../lib/notifications';
 
 export default function RootLayout() {
   const { session, setSession, setLoading } = useAuthStore();
+  const { onboardingDone, onboardingChecked, setOnboardingDone, setOnboardingChecked } = useOnboardingStore();
   const router   = useRouter();
   const segments = useSegments();
-  const [onboardingChecked, setOnboardingChecked] = useState(false);
-  const [onboardingDone,    setOnboardingDone]    = useState(true);
-
-  const checkOnboarding = async () => {
-    const val = await AsyncStorage.getItem('onboarding_done');
-    setOnboardingDone(val === 'true');
-    setOnboardingChecked(true);
-  };
 
   useEffect(() => {
-    checkOnboarding();
+    // Vérifie l'onboarding au démarrage
+    AsyncStorage.getItem('onboarding_done').then((val) => {
+      setOnboardingDone(val === 'true');
+      setOnboardingChecked(true);
+    });
 
     const timeout = setTimeout(() => setLoading(false), 10000);
 
@@ -43,8 +41,6 @@ export default function RootLayout() {
 
     const appStateSubscription = AppState.addEventListener('change', async (state) => {
       if (state === 'active') {
-        // Re-vérifie l'onboarding au retour en foreground
-        checkOnboarding();
         supabase.auth.getSession().then(({ data: { session } }) => {
           if (session) setSession(session);
         });
@@ -64,11 +60,13 @@ export default function RootLayout() {
     const inAuthGroup  = segments[0] === '(auth)';
     const inOnboarding = segments[0] === 'onboarding';
 
+    // Onboarding pas encore vu
     if (!onboardingDone && !inOnboarding) {
       router.replace('/onboarding');
       return;
     }
 
+    // Onboarding fait → logique auth normale
     if (onboardingDone) {
       if (!session && !inAuthGroup && !inOnboarding) {
         router.replace('/(auth)/login');
