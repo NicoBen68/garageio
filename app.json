@@ -10,7 +10,6 @@
     "ios": {
       "icon": "./assets/icon.png",
       "supportsTablet": true,
-      "autoIncrement": true,
       "bundleIdentifier": "com.nicoben68.garageio",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
