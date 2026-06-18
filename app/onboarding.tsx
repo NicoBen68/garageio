@@ -52,7 +52,9 @@ export default function OnboardingScreen() {
 
   const completeOnboarding = async () => {
     await AsyncStorage.setItem('onboarding_done', 'true');
+    console.log('completeOnboarding called');
     setOnboardingDone(true);
+    console.log('onboardingDone set to true')
     // Le _layout va détecter onboardingDone = true et rediriger automatiquement
   };
 

@@ -14,8 +14,8 @@ export default function RootLayout() {
   const segments = useSegments();
 
   useEffect(() => {
-    // Vérifie l'onboarding au démarrage
     AsyncStorage.getItem('onboarding_done').then((val) => {
+      console.log('onboarding_done:', val);
       setOnboardingDone(val === 'true');
       setOnboardingChecked(true);
     });
@@ -55,20 +55,23 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
+    console.log('nav effect:', { onboardingChecked, onboardingDone, seg: segments[0], session: !!session });
     if (!onboardingChecked) return;
 
     const inAuthGroup  = segments[0] === '(auth)';
     const inOnboarding = segments[0] === 'onboarding';
 
-    // Onboarding pas encore vu
     if (!onboardingDone && !inOnboarding) {
       router.replace('/onboarding');
       return;
     }
 
-    // Onboarding fait → logique auth normale
     if (onboardingDone) {
-      if (!session && !inAuthGroup && !inOnboarding) {
+      if (inOnboarding) {
+        router.replace('/(auth)/login');
+        return;
+      }
+      if (!session && !inAuthGroup) {
         router.replace('/(auth)/login');
       } else if (session && inAuthGroup) {
         router.replace('/(tabs)');
