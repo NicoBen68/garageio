@@ -6,6 +6,7 @@ import {
 import { useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
+import { useColors } from '../../lib/colors';
 
 interface Reminder {
   id:               string;
@@ -25,8 +26,7 @@ const CATEGORY_EMOJI: Record<string, string> = {
 function getUrgency(reminder: Reminder): 'overdue' | 'soon' | 'ok' {
   const today = new Date();
   if (reminder.next_due_date) {
-    const due = new Date(reminder.next_due_date);
-    const daysLeft = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const daysLeft = Math.ceil((new Date(reminder.next_due_date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     if (daysLeft < 0)  return 'overdue';
     if (daysLeft < 30) return 'soon';
   }
@@ -59,6 +59,7 @@ function formatDueInfo(reminder: Reminder): string {
 }
 
 export default function RemindersScreen() {
+  const c        = useColors();
   const { user } = useAuthStore();
   const [reminders,  setReminders]  = useState<Reminder[]>([]);
   const [loading,    setLoading]    = useState(true);
@@ -72,72 +73,55 @@ export default function RemindersScreen() {
       .in('status', ['active', 'overdue'])
       .order('next_due_date', { ascending: true, nullsFirst: false });
     if (!error && data) setReminders(data);
-    setLoading(false);
-    setRefreshing(false);
+    setLoading(false); setRefreshing(false);
   };
 
-  useFocusEffect(useCallback(() => {
-    setLoading(true);
-    fetchReminders();
-  }, []));
-
+  useFocusEffect(useCallback(() => { setLoading(true); fetchReminders(); }, []));
   const onRefresh = () => { setRefreshing(true); fetchReminders(); };
 
   const handleDone = (reminder: Reminder) => {
-    Alert.alert(
-      'Marquer comme fait ?',
-      `${reminder.maintenance_types?.name} — cette intervention a été effectuée ?`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        { text: "✅ Oui, c'est fait", onPress: async () => {
-          await supabase.from('reminders').update({ status: 'done' }).eq('id', reminder.id);
-          setReminders(prev => prev.filter(r => r.id !== reminder.id));
-        }},
-      ]
-    );
+    Alert.alert('Marquer comme fait ?', `${reminder.maintenance_types?.name} — cette intervention a été effectuée ?`, [
+      { text: 'Annuler', style: 'cancel' },
+      { text: "✅ Oui, c'est fait", onPress: async () => {
+        await supabase.from('reminders').update({ status: 'done' }).eq('id', reminder.id);
+        setReminders(prev => prev.filter(r => r.id !== reminder.id));
+      }},
+    ]);
   };
 
   const handleSnooze = (reminder: Reminder) => {
     const snoozeDate = new Date();
     snoozeDate.setDate(snoozeDate.getDate() + 30);
-    Alert.alert(
-      "Reporter d'un mois ?",
-      `Le rappel sera reporté au ${snoozeDate.toLocaleDateString('fr-FR')}.`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        { text: 'Reporter', onPress: async () => {
-          await supabase.from('reminders').update({ status: 'snoozed', snoozed_until: snoozeDate.toISOString().split('T')[0] }).eq('id', reminder.id);
-          setReminders(prev => prev.filter(r => r.id !== reminder.id));
-        }},
-      ]
-    );
+    Alert.alert("Reporter d'un mois ?", `Le rappel sera reporté au ${snoozeDate.toLocaleDateString('fr-FR')}.`, [
+      { text: 'Annuler', style: 'cancel' },
+      { text: 'Reporter', onPress: async () => {
+        await supabase.from('reminders').update({ status: 'snoozed', snoozed_until: snoozeDate.toISOString().split('T')[0] }).eq('id', reminder.id);
+        setReminders(prev => prev.filter(r => r.id !== reminder.id));
+      }},
+    ]);
   };
 
   const handleDelete = (id: string) => {
-    Alert.alert(
-      'Supprimer ce rappel ?',
-      'Il ne reviendra pas automatiquement.',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        { text: 'Supprimer', style: 'destructive', onPress: async () => {
-          await supabase.from('reminders').delete().eq('id', id);
-          setReminders(prev => prev.filter(r => r.id !== id));
-        }},
-      ]
-    );
+    Alert.alert('Supprimer ce rappel ?', 'Il ne reviendra pas automatiquement.', [
+      { text: 'Annuler', style: 'cancel' },
+      { text: 'Supprimer', style: 'destructive', onPress: async () => {
+        await supabase.from('reminders').delete().eq('id', id);
+        setReminders(prev => prev.filter(r => r.id !== id));
+      }},
+    ]);
   };
 
-  if (loading) return <View style={styles.centered}><ActivityIndicator color="#3B82F6" size="large" /></View>;
+  if (loading) return <View style={[styles.centered, { backgroundColor: c.bg }]}><ActivityIndicator color="#3B82F6" size="large" /></View>;
 
   const overdueCount = reminders.filter(r => getUrgency(r) === 'overdue').length;
   const soonCount    = reminders.filter(r => getUrgency(r) === 'soon').length;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: c.bg }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Rappels</Text>
+        <Text style={[styles.title, { color: c.textPrimary }]}>Rappels</Text>
         {reminders.length > 0 && (
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: c.textMuted }]}>
             {overdueCount > 0 ? `${overdueCount} en retard · ` : ''}
             {soonCount > 0    ? `${soonCount} bientôt · `      : ''}
             {reminders.length} au total
@@ -148,8 +132,8 @@ export default function RemindersScreen() {
       {reminders.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyEmoji}>✅</Text>
-          <Text style={styles.emptyTitle}>Tout est à jour !</Text>
-          <Text style={styles.emptySubtitle}>Les rappels apparaîtront ici automatiquement après tes interventions.</Text>
+          <Text style={[styles.emptyTitle, { color: c.textPrimary }]}>Tout est à jour !</Text>
+          <Text style={[styles.emptySubtitle, { color: c.textMuted }]}>Les rappels apparaîtront ici automatiquement après tes interventions.</Text>
         </View>
       ) : (
         <FlatList
@@ -159,26 +143,29 @@ export default function RemindersScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3B82F6" />}
           renderItem={({ item }) => {
             const urgency = getUrgency(item);
+            const cardStyle = urgency === 'overdue'
+              ? { backgroundColor: '#1A0F0F', borderColor: '#EF4444' }
+              : urgency === 'soon'
+              ? { backgroundColor: '#1A160A', borderColor: '#F59E0B' }
+              : { backgroundColor: c.card, borderColor: c.cardBorder };
+            const badgeBg = urgency === 'overdue' ? '#7F1D1D' : urgency === 'soon' ? '#78350F' : '#1E3A2F';
+
             return (
-              <TouchableOpacity
-                style={[styles.card, (styles as any)[`card_${urgency}`]]}
-                onLongPress={() => handleDelete(item.id)}
-                activeOpacity={1}
-              >
+              <TouchableOpacity style={[styles.card, cardStyle]} onLongPress={() => handleDelete(item.id)} activeOpacity={1}>
                 <View style={styles.cardTop}>
                   <Text style={styles.cardEmoji}>{CATEGORY_EMOJI[item.maintenance_types?.category] ?? '🔧'}</Text>
                   <View style={styles.cardCenter}>
-                    <Text style={styles.cardName}>{item.maintenance_types?.name}</Text>
-                    <Text style={styles.cardVehicle}>{item.vehicles?.brand} {item.vehicles?.model}</Text>
-                    <Text style={[styles.cardDue, urgency === 'overdue' && styles.cardDueOverdue]}>{formatDueInfo(item)}</Text>
+                    <Text style={[styles.cardName, { color: c.textPrimary }]}>{item.maintenance_types?.name}</Text>
+                    <Text style={[styles.cardVehicle, { color: c.textMuted }]}>{item.vehicles?.brand} {item.vehicles?.model}</Text>
+                    <Text style={[styles.cardDue, { color: c.textSecondary }, urgency === 'overdue' && styles.cardDueOverdue]}>{formatDueInfo(item)}</Text>
                   </View>
-                  <View style={[styles.urgencyBadge, (styles as any)[`badge_${urgency}`]]}>
+                  <View style={[styles.urgencyBadge, { backgroundColor: badgeBg }]}>
                     <Text style={styles.urgencyText}>{urgency === 'overdue' ? '⚠️' : urgency === 'soon' ? '🔔' : '✓'}</Text>
                   </View>
                 </View>
                 <View style={styles.cardActions}>
-                  <TouchableOpacity style={styles.actionBtnSnooze} onPress={() => handleSnooze(item)}>
-                    <Text style={styles.actionBtnSnoozeText}>Reporter</Text>
+                  <TouchableOpacity style={[styles.actionBtnSnooze, { backgroundColor: c.card, borderColor: c.cardBorder }]} onPress={() => handleSnooze(item)}>
+                    <Text style={[styles.actionBtnSnoozeText, { color: c.textSecondary }]}>Reporter</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.actionBtnDone} onPress={() => handleDone(item)}>
                     <Text style={styles.actionBtnDoneText}>✅ Fait !</Text>
@@ -194,35 +181,29 @@ export default function RemindersScreen() {
 }
 
 const styles = StyleSheet.create({
-  container:           { flex: 1, backgroundColor: '#0F172A' },
-  centered:            { flex: 1, backgroundColor: '#0F172A', justifyContent: 'center', alignItems: 'center' },
+  container:           { flex: 1 },
+  centered:            { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header:              { paddingHorizontal: 24, paddingTop: 60, paddingBottom: 16, gap: 4 },
-  title:               { fontSize: 28, fontWeight: '700', color: '#F8FAFC' },
-  subtitle:            { fontSize: 13, color: '#64748B' },
+  title:               { fontSize: 28, fontWeight: '700' },
+  subtitle:            { fontSize: 13 },
   emptyState:          { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40, gap: 12 },
   emptyEmoji:          { fontSize: 64 },
-  emptyTitle:          { fontSize: 20, fontWeight: '700', color: '#F8FAFC', textAlign: 'center' },
-  emptySubtitle:       { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 20 },
+  emptyTitle:          { fontSize: 20, fontWeight: '700', textAlign: 'center' },
+  emptySubtitle:       { fontSize: 14, textAlign: 'center', lineHeight: 20 },
   list:                { paddingHorizontal: 24, paddingBottom: 32, gap: 12 },
-  card:                { backgroundColor: '#1E293B', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#334155', gap: 12 },
-  card_overdue:        { borderColor: '#EF4444', backgroundColor: '#1A0F0F' },
-  card_soon:           { borderColor: '#F59E0B', backgroundColor: '#1A160A' },
-  card_ok:             { borderColor: '#334155' },
+  card:                { borderRadius: 16, padding: 14, borderWidth: 1, gap: 12 },
   cardTop:             { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   cardEmoji:           { fontSize: 24, width: 32 },
   cardCenter:          { flex: 1, gap: 3 },
-  cardName:            { fontSize: 15, fontWeight: '600', color: '#F8FAFC' },
-  cardVehicle:         { fontSize: 12, color: '#64748B' },
-  cardDue:             { fontSize: 12, color: '#94A3B8', marginTop: 2 },
+  cardName:            { fontSize: 15, fontWeight: '600' },
+  cardVehicle:         { fontSize: 12 },
+  cardDue:             { fontSize: 12, marginTop: 2 },
   cardDueOverdue:      { color: '#F87171' },
   urgencyBadge:        { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
-  badge_overdue:       { backgroundColor: '#7F1D1D' },
-  badge_soon:          { backgroundColor: '#78350F' },
-  badge_ok:            { backgroundColor: '#1E3A2F' },
   urgencyText:         { fontSize: 16 },
   cardActions:         { flexDirection: 'row', gap: 8 },
-  actionBtnSnooze:     { flex: 1, backgroundColor: '#1E293B', borderRadius: 8, paddingVertical: 8, alignItems: 'center', borderWidth: 1, borderColor: '#334155' },
-  actionBtnSnoozeText: { color: '#94A3B8', fontSize: 13, fontWeight: '500' },
+  actionBtnSnooze:     { flex: 1, borderRadius: 8, paddingVertical: 8, alignItems: 'center', borderWidth: 1 },
+  actionBtnSnoozeText: { fontSize: 13, fontWeight: '500' },
   actionBtnDone:       { flex: 1, backgroundColor: '#1E3A2F', borderRadius: 8, paddingVertical: 8, alignItems: 'center', borderWidth: 1, borderColor: '#166534' },
   actionBtnDoneText:   { color: '#34D399', fontSize: 13, fontWeight: '600' },
 });

@@ -6,8 +6,10 @@ import {
 } from 'react-native';
 import { Link } from 'expo-router';
 import { supabase } from '../../lib/supabase';
+import { useColors } from '../../lib/colors';
 
 export default function LoginScreen() {
+  const c = useColors();
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
@@ -17,36 +19,31 @@ export default function LoginScreen() {
       Alert.alert('Erreur', 'Remplis tous les champs.');
       return;
     }
-
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-
     if (error) Alert.alert('Erreur de connexion', error.message);
-    // La redirection est gérée automatiquement par _layout.tsx via onAuthStateChange
   };
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: c.bg }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.inner}>
 
-        {/* Logo / titre */}
         <View style={styles.header}>
           <Text style={styles.logo}>🚗</Text>
-          <Text style={styles.title}>GarageIO</Text>
-          <Text style={styles.subtitle}>Ton carnet d'entretien intelligent</Text>
+          <Text style={[styles.title, { color: c.textPrimary }]}>GarageIO</Text>
+          <Text style={[styles.subtitle, { color: c.textSecondary }]}>Ton carnet d'entretien intelligent</Text>
         </View>
 
-        {/* Formulaire */}
         <View style={styles.form}>
-          <Text style={styles.label}>Email</Text>
+          <Text style={[styles.label, { color: c.textSecondary }]}>Email</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: c.input, borderColor: c.inputBorder, color: c.textPrimary }]}
             placeholder="tu@email.com"
-            placeholderTextColor="#64748B"
+            placeholderTextColor={c.textMuted}
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
@@ -54,11 +51,11 @@ export default function LoginScreen() {
             onChangeText={setEmail}
           />
 
-          <Text style={styles.label}>Mot de passe</Text>
+          <Text style={[styles.label, { color: c.textSecondary }]}>Mot de passe</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: c.input, borderColor: c.inputBorder, color: c.textPrimary }]}
             placeholder="••••••••"
-            placeholderTextColor="#64748B"
+            placeholderTextColor={c.textMuted}
             secureTextEntry
             autoComplete="password"
             value={password}
@@ -77,9 +74,8 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Lien inscription */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Pas encore de compte ? </Text>
+          <Text style={[styles.footerText, { color: c.textMuted }]}>Pas encore de compte ? </Text>
           <Link href="/(auth)/register">
             <Text style={styles.footerLink}>S'inscrire</Text>
           </Link>
@@ -91,79 +87,19 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0F172A',
-  },
-  inner: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    gap: 32,
-  },
-  header: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  logo: {
-    fontSize: 56,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#F8FAFC',
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: 15,
-    color: '#94A3B8',
-  },
-  form: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#CBD5E1',
-    marginBottom: 4,
-    marginTop: 8,
-  },
-  input: {
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#334155',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: '#F8FAFC',
-  },
-  button: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  footerText: {
-    color: '#64748B',
-    fontSize: 14,
-  },
-  footerLink: {
-    color: '#3B82F6',
-    fontSize: 14,
-    fontWeight: '600',
-  },
+  container:      { flex: 1 },
+  inner:          { flex: 1, justifyContent: 'center', paddingHorizontal: 24, gap: 32 },
+  header:         { alignItems: 'center', gap: 8 },
+  logo:           { fontSize: 56 },
+  title:          { fontSize: 32, fontWeight: '700', letterSpacing: -0.5 },
+  subtitle:       { fontSize: 15 },
+  form:           { gap: 8 },
+  label:          { fontSize: 14, fontWeight: '500', marginBottom: 4, marginTop: 8 },
+  input:          { borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16 },
+  button:         { backgroundColor: '#3B82F6', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 16 },
+  buttonDisabled: { opacity: 0.6 },
+  buttonText:     { color: '#fff', fontSize: 16, fontWeight: '600' },
+  footer:         { flexDirection: 'row', justifyContent: 'center' },
+  footerText:     { fontSize: 14 },
+  footerLink:     { color: '#3B82F6', fontSize: 14, fontWeight: '600' },
 });
