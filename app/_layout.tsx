@@ -15,12 +15,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     AsyncStorage.getItem('onboarding_done').then((val) => {
-      console.log('onboarding_done:', val);
       setOnboardingDone(val === 'true');
       setOnboardingChecked(true);
     });
 
-    const timeout = setTimeout(() => setLoading(false), 10000);
+    const timeout = setTimeout(() => setLoading(false), 15000);
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       clearTimeout(timeout);
@@ -41,9 +40,16 @@ export default function RootLayout() {
 
     const appStateSubscription = AppState.addEventListener('change', async (state) => {
       if (state === 'active') {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          if (session) setSession(session);
-        });
+        // Tente de récupérer la session existante
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          setSession(data.session);
+        } else {
+          // Session expirée → tente un refresh token
+          const { data: refreshed } = await supabase.auth.refreshSession();
+          if (refreshed.session) setSession(refreshed.session);
+          else setLoading(false);
+        }
       }
     });
 
@@ -55,7 +61,6 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    console.log('nav effect:', { onboardingChecked, onboardingDone, seg: segments[0], session: !!session });
     if (!onboardingChecked) return;
 
     const inAuthGroup  = segments[0] === '(auth)';

@@ -164,7 +164,11 @@ export default function RemindersScreen() {
                   </View>
                 </View>
                 <View style={styles.cardActions}>
-                  <TouchableOpacity style={[styles.actionBtnSnooze, { backgroundColor: c.card, borderColor: c.cardBorder }]} onPress={() => handleSnooze(item)}>
+                  <TouchableOpacity 
+                    style={[styles.actionBtnSnooze, { backgroundColor: c.bgSecondary, borderColor: c.cardBorder }]} 
+                    onPress={() => handleSnooze(item)}
+                  >
+
                     <Text style={[styles.actionBtnSnoozeText, { color: c.textSecondary }]}>Reporter</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.actionBtnDone} onPress={() => handleDone(item)}>
