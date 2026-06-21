@@ -148,7 +148,7 @@ export default function RemindersScreen() {
               : urgency === 'soon'
               ? { backgroundColor: '#1A160A', borderColor: '#F59E0B' }
               : { backgroundColor: c.card, borderColor: c.cardBorder };
-            const badgeBg = urgency === 'overdue' ? '#7F1D1D' : urgency === 'soon' ? '#78350F' : '#1E3A2F';
+            const badgeBg = urgency === 'overdue' ? '#7F1D1D' : urgency === 'soon' ? '#78350F' : c.bgSecondary;
 
             return (
               <TouchableOpacity style={[styles.card, cardStyle]} onLongPress={() => handleDelete(item.id)} activeOpacity={1}>
@@ -160,7 +160,9 @@ export default function RemindersScreen() {
                     <Text style={[styles.cardDue, { color: c.textSecondary }, urgency === 'overdue' && styles.cardDueOverdue]}>{formatDueInfo(item)}</Text>
                   </View>
                   <View style={[styles.urgencyBadge, { backgroundColor: badgeBg }]}>
-                    <Text style={styles.urgencyText}>{urgency === 'overdue' ? '⚠️' : urgency === 'soon' ? '🔔' : '✓'}</Text>
+                    <Text style={[styles.urgencyText, urgency === 'ok' && { color: c.textMuted }]}>
+                      {urgency === 'overdue' ? '⚠️' : urgency === 'soon' ? '🔔' : '✓'}
+                    </Text>
                   </View>
                 </View>
                 <View style={styles.cardActions}>
