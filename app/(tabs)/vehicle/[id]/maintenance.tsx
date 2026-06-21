@@ -62,45 +62,59 @@ export default function MaintenanceScreen() {
   return (
     <View style={[styles.container, { backgroundColor: c.bg }]}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backText}>← Retour</Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Retour au véhicule"
+        >
+          <Text style={styles.backText} maxFontSizeMultiplier={1.3}>← Retour</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.addBtn} onPress={() => router.push(`/(tabs)/vehicle/${id}/add-maintenance`)}>
-          <Text style={styles.addBtnText}>＋ Ajouter</Text>
+        <TouchableOpacity
+          style={styles.addBtn}
+          onPress={() => router.push(`/(tabs)/vehicle/${id}/add-maintenance`)}
+          accessibilityRole="button"
+          accessibilityLabel="Ajouter une intervention"
+        >
+          <Text style={styles.addBtnText} maxFontSizeMultiplier={1.3}>＋ Ajouter</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.titleBlock}>
-        <Text style={[styles.title, { color: c.textPrimary }]}>Carnet d'entretien</Text>
-        <Text style={[styles.subtitle, { color: c.textMuted }]}>{vehicle?.brand} {vehicle?.model}</Text>
+        <Text style={[styles.title, { color: c.textPrimary }]} maxFontSizeMultiplier={1.3}>Carnet d'entretien</Text>
+        <Text style={[styles.subtitle, { color: c.textMuted }]} maxFontSizeMultiplier={1.3}>{vehicle?.brand} {vehicle?.model}</Text>
       </View>
 
       {records.length > 0 && (
         <View style={styles.statsRow}>
           <View style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]}>
-            <Text style={[styles.statValue, { color: c.textPrimary }]}>{records.length}</Text>
-            <Text style={[styles.statLabel, { color: c.textMuted }]}>interventions</Text>
+            <Text style={[styles.statValue, { color: c.textPrimary }]} maxFontSizeMultiplier={1.3}>{records.length}</Text>
+            <Text style={[styles.statLabel, { color: c.textMuted }]} maxFontSizeMultiplier={1.2}>interventions</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]}>
-            <Text style={[styles.statValue, { color: c.textPrimary }]}>{totalSpent.toLocaleString('fr-FR')}€</Text>
-            <Text style={[styles.statLabel, { color: c.textMuted }]}>dépensés</Text>
+            <Text style={[styles.statValue, { color: c.textPrimary }]} maxFontSizeMultiplier={1.3}>{totalSpent.toLocaleString('fr-FR')}€</Text>
+            <Text style={[styles.statLabel, { color: c.textMuted }]} maxFontSizeMultiplier={1.2}>dépensés</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]}>
-            <Text style={[styles.statValue, { color: c.textPrimary }]}>
+            <Text style={[styles.statValue, { color: c.textPrimary }]} maxFontSizeMultiplier={1.3}>
               {records[0]?.performed_at ? new Date(records[0].performed_at).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }) : '—'}
             </Text>
-            <Text style={[styles.statLabel, { color: c.textMuted }]}>dernier entretien</Text>
+            <Text style={[styles.statLabel, { color: c.textMuted }]} maxFontSizeMultiplier={1.2}>dernier entretien</Text>
           </View>
         </View>
       )}
 
       {records.length === 0 ? (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyEmoji}>🔧</Text>
-          <Text style={[styles.emptyTitle, { color: c.textPrimary }]}>Aucune intervention</Text>
-          <Text style={[styles.emptySubtitle, { color: c.textMuted }]}>Ajoute ta première intervention pour commencer à suivre l'entretien de ton véhicule.</Text>
-          <TouchableOpacity style={styles.emptyBtn} onPress={() => router.push(`/(tabs)/vehicle/${id}/add-maintenance`)}>
-            <Text style={styles.emptyBtnText}>Ajouter une intervention</Text>
+          <Text style={styles.emptyEmoji} accessibilityElementsHidden>🔧</Text>
+          <Text style={[styles.emptyTitle, { color: c.textPrimary }]} maxFontSizeMultiplier={1.3}>Aucune intervention</Text>
+          <Text style={[styles.emptySubtitle, { color: c.textMuted }]} maxFontSizeMultiplier={1.3}>Ajoute ta première intervention pour commencer à suivre l'entretien de ton véhicule.</Text>
+          <TouchableOpacity
+            style={styles.emptyBtn}
+            onPress={() => router.push(`/(tabs)/vehicle/${id}/add-maintenance`)}
+            accessibilityRole="button"
+            accessibilityLabel="Ajouter une intervention"
+          >
+            <Text style={styles.emptyBtnText} maxFontSizeMultiplier={1.3}>Ajouter une intervention</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -110,21 +124,27 @@ export default function MaintenanceScreen() {
           contentContainerStyle={styles.list}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3B82F6" />}
           renderItem={({ item }) => (
-            <TouchableOpacity style={[styles.card, { backgroundColor: c.card, borderColor: c.cardBorder }]} onLongPress={() => handleDelete(item.id)}>
+            <TouchableOpacity
+              style={[styles.card, { backgroundColor: c.card, borderColor: c.cardBorder }]}
+              onLongPress={() => handleDelete(item.id)}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.maintenance_types?.name}, ${new Date(item.performed_at).toLocaleDateString('fr-FR')}${item.amount ? `, ${item.amount}€` : ''}`}
+              accessibilityHint="Appui long pour supprimer cette intervention"
+            >
               <View style={styles.cardLeft}>
-                <Text style={styles.cardEmoji}>{CATEGORY_EMOJI[item.maintenance_types?.category] ?? '🔧'}</Text>
+                <Text style={styles.cardEmoji} accessibilityElementsHidden>{CATEGORY_EMOJI[item.maintenance_types?.category] ?? '🔧'}</Text>
               </View>
               <View style={styles.cardCenter}>
-                <Text style={[styles.cardName, { color: c.textPrimary }]}>{item.maintenance_types?.name}</Text>
-                <Text style={[styles.cardMeta, { color: c.textMuted }]}>
+                <Text style={[styles.cardName, { color: c.textPrimary }]} maxFontSizeMultiplier={1.3}>{item.maintenance_types?.name}</Text>
+                <Text style={[styles.cardMeta, { color: c.textMuted }]} maxFontSizeMultiplier={1.3}>
                   {new Date(item.performed_at).toLocaleDateString('fr-FR')}
                   {item.mileage_at_service ? ` · ${item.mileage_at_service.toLocaleString('fr-FR')} km` : ''}
                 </Text>
-                {item.garage_name ? <Text style={[styles.cardGarage, { color: c.textSecondary }]}>📍 {item.garage_name}</Text> : null}
-                {item.notes ? <Text style={[styles.cardNotes, { color: c.textDisabled }]} numberOfLines={1}>{item.notes}</Text> : null}
+                {item.garage_name ? <Text style={[styles.cardGarage, { color: c.textSecondary }]} maxFontSizeMultiplier={1.3}>📍 {item.garage_name}</Text> : null}
+                {item.notes ? <Text style={[styles.cardNotes, { color: c.textDisabled }]} numberOfLines={1} maxFontSizeMultiplier={1.3}>{item.notes}</Text> : null}
               </View>
               <View style={styles.cardRight}>
-                {item.amount ? <Text style={styles.cardAmount}>{item.amount}€</Text> : null}
+                {item.amount ? <Text style={styles.cardAmount} maxFontSizeMultiplier={1.3}>{item.amount}€</Text> : null}
               </View>
             </TouchableOpacity>
           )}
@@ -139,7 +159,7 @@ const styles = StyleSheet.create({
   centered:     { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingTop: 60, paddingBottom: 8 },
   backText:     { color: '#3B82F6', fontSize: 15 },
-  addBtn:       { backgroundColor: '#3B82F6', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7 },
+  addBtn:       { backgroundColor: '#3B82F6', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7, minHeight: 44, justifyContent: 'center' },
   addBtnText:   { color: '#fff', fontWeight: '600', fontSize: 14 },
   titleBlock:   { paddingHorizontal: 24, paddingBottom: 16, gap: 4 },
   title:        { fontSize: 26, fontWeight: '700' },
@@ -152,10 +172,10 @@ const styles = StyleSheet.create({
   emptyEmoji:   { fontSize: 56 },
   emptyTitle:   { fontSize: 20, fontWeight: '700', textAlign: 'center' },
   emptySubtitle:{ fontSize: 14, textAlign: 'center', lineHeight: 20 },
-  emptyBtn:     { marginTop: 8, backgroundColor: '#3B82F6', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 14 },
+  emptyBtn:     { marginTop: 8, backgroundColor: '#3B82F6', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 14, minHeight: 44 },
   emptyBtnText: { color: '#fff', fontSize: 15, fontWeight: '600' },
   list:         { paddingHorizontal: 24, paddingBottom: 32, gap: 10 },
-  card:         { flexDirection: 'row', borderRadius: 14, padding: 14, borderWidth: 1, gap: 12, alignItems: 'center' },
+  card:         { flexDirection: 'row', borderRadius: 14, padding: 14, borderWidth: 1, gap: 12, alignItems: 'center', minHeight: 44 },
   cardLeft:     { width: 36, alignItems: 'center' },
   cardEmoji:    { fontSize: 24 },
   cardCenter:   { flex: 1, gap: 3 },

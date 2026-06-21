@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, SectionList, TouchableOpacity,
+  View, Text, StyleSheet, SectionList,
   ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
@@ -26,6 +26,8 @@ const CATEGORY_EMOJI: Record<string, string> = {
   ct: '📋', filtres: '🌀', batterie: '🔋', climatisation: '❄️',
   carrosserie: '🚗', autre: '🔧',
 };
+
+const MAX_FONT = 1.3;
 
 function groupByMonth(records: MaintenanceRecord[]): Section[] {
   const groups: Record<string, MaintenanceRecord[]> = {};
@@ -64,25 +66,25 @@ export default function MaintenanceGlobalScreen() {
   return (
     <View style={[styles.container, { backgroundColor: c.bg }]}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: c.textPrimary }]}>Entretien</Text>
-        <Text style={[styles.subtitle, { color: c.textMuted }]}>Tous véhicules confondus</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.title, { color: c.textPrimary }]}>Entretien</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.subtitle, { color: c.textMuted }]}>Tous véhicules confondus</Text>
       </View>
 
       {records.length > 0 && (
         <View style={styles.statsRow}>
-          <View style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]}>
-            <Text style={[styles.statValue, { color: c.textPrimary }]}>{records.length}</Text>
-            <Text style={[styles.statLabel, { color: c.textMuted }]}>interventions</Text>
+          <View style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]} accessibilityLabel={`${records.length} interventions`}>
+            <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.statValue, { color: c.textPrimary }]}>{records.length}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.statLabel, { color: c.textMuted }]}>interventions</Text>
+          </View>
+          <View style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]} accessibilityLabel={`${totalSpent.toLocaleString('fr-FR')} euros dépensés`}>
+            <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.statValue, { color: c.textPrimary }]}>{totalSpent.toLocaleString('fr-FR')}€</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.statLabel, { color: c.textMuted }]}>total dépensé</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]}>
-            <Text style={[styles.statValue, { color: c.textPrimary }]}>{totalSpent.toLocaleString('fr-FR')}€</Text>
-            <Text style={[styles.statLabel, { color: c.textMuted }]}>total dépensé</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]}>
-            <Text style={[styles.statValue, { color: c.textPrimary }]}>
+            <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.statValue, { color: c.textPrimary }]}>
               {records[0]?.performed_at ? new Date(records[0].performed_at).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }) : '—'}
             </Text>
-            <Text style={[styles.statLabel, { color: c.textMuted }]}>dernier entretien</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.statLabel, { color: c.textMuted }]}>dernier entretien</Text>
           </View>
         </View>
       )}
@@ -90,8 +92,8 @@ export default function MaintenanceGlobalScreen() {
       {records.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyEmoji}>🔧</Text>
-          <Text style={[styles.emptyTitle, { color: c.textPrimary }]}>Aucune intervention</Text>
-          <Text style={[styles.emptySubtitle, { color: c.textMuted }]}>Tes interventions apparaîtront ici une fois ajoutées depuis le détail d'un véhicule.</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.emptyTitle, { color: c.textPrimary }]}>Aucune intervention</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.emptySubtitle, { color: c.textMuted }]}>Tes interventions apparaîtront ici une fois ajoutées depuis le détail d'un véhicule.</Text>
         </View>
       ) : (
         <SectionList
@@ -101,29 +103,32 @@ export default function MaintenanceGlobalScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3B82F6" />}
           renderSectionHeader={({ section }) => (
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionHeaderText, { color: c.textMuted }]}>{section.title}</Text>
-              <Text style={styles.sectionHeaderAmount}>{section.data.reduce((sum, r) => sum + (r.amount ?? 0), 0).toLocaleString('fr-FR')}€</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.sectionHeaderText, { color: c.textMuted }]}>{section.title}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT} style={styles.sectionHeaderAmount}>{section.data.reduce((sum, r) => sum + (r.amount ?? 0), 0).toLocaleString('fr-FR')}€</Text>
             </View>
           )}
           renderItem={({ item }) => (
-            <View style={[styles.card, { backgroundColor: c.card, borderColor: c.cardBorder }]}>
+            <View
+              style={[styles.card, { backgroundColor: c.card, borderColor: c.cardBorder }]}
+              accessibilityLabel={`${item.maintenance_types?.name}, ${item.vehicles?.brand} ${item.vehicles?.model}, le ${new Date(item.performed_at).toLocaleDateString('fr-FR')}${item.amount ? `, ${item.amount} euros` : ''}`}
+            >
               <View style={styles.cardLeft}>
                 <Text style={styles.cardEmoji}>{CATEGORY_EMOJI[item.maintenance_types?.category] ?? '🔧'}</Text>
               </View>
               <View style={styles.cardCenter}>
-                <Text style={[styles.cardName, { color: c.textPrimary }]}>{item.maintenance_types?.name}</Text>
+                <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.cardName, { color: c.textPrimary }]}>{item.maintenance_types?.name}</Text>
                 <View style={[styles.vehicleBadge, { backgroundColor: c.bg, borderColor: c.cardBorder }]}>
-                  <Text style={[styles.vehicleBadgeText, { color: c.textMuted }]}>{item.vehicles?.brand} {item.vehicles?.model} · {item.vehicles?.license_plate}</Text>
+                  <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.vehicleBadgeText, { color: c.textMuted }]}>{item.vehicles?.brand} {item.vehicles?.model} · {item.vehicles?.license_plate}</Text>
                 </View>
-                <Text style={[styles.cardMeta, { color: c.textMuted }]}>
+                <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.cardMeta, { color: c.textMuted }]}>
                   {new Date(item.performed_at).toLocaleDateString('fr-FR')}
                   {item.mileage_at_service ? ` · ${item.mileage_at_service.toLocaleString('fr-FR')} km` : ''}
                 </Text>
-                {item.garage_name ? <Text style={[styles.cardGarage, { color: c.textSecondary }]}>📍 {item.garage_name}</Text> : null}
-                {item.notes ? <Text style={[styles.cardNotes, { color: c.textDisabled }]} numberOfLines={1}>{item.notes}</Text> : null}
+                {item.garage_name ? <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.cardGarage, { color: c.textSecondary }]}>📍 {item.garage_name}</Text> : null}
+                {item.notes ? <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.cardNotes, { color: c.textDisabled }]} numberOfLines={1}>{item.notes}</Text> : null}
               </View>
               <View style={styles.cardRight}>
-                {item.amount ? <Text style={styles.cardAmount}>{item.amount}€</Text> : null}
+                {item.amount ? <Text maxFontSizeMultiplier={MAX_FONT} style={styles.cardAmount}>{item.amount}€</Text> : null}
               </View>
             </View>
           )}

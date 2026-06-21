@@ -33,6 +33,8 @@ const FUEL_EMOJI: Record<string, string> = {
   electrique: '⚡', gpl: '💨', autre: '🔧',
 };
 
+const MAX_FONT = 1.3; // Limite le zoom police à 130%
+
 function getUrgency(reminder: Reminder): 'overdue' | 'soon' | 'ok' {
   const today = new Date();
   if (reminder.next_due_date) {
@@ -117,12 +119,17 @@ export default function VehiclesScreen() {
           {/* Header */}
           <View style={styles.header}>
             <View>
-              <Text style={[styles.greeting, { color: c.textPrimary }]}>{getGreeting()}</Text>
-              <Text style={[styles.subtitle, { color: c.textMuted }]}>
+              <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.greeting, { color: c.textPrimary }]}>{getGreeting()}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.subtitle, { color: c.textMuted }]}>
                 {vehicles.length === 0 ? 'Aucun véhicule enregistré' : `${vehicles.length} véhicule${vehicles.length > 1 ? 's' : ''}`}
               </Text>
             </View>
-            <TouchableOpacity style={styles.addBtn} onPress={() => router.push('/(tabs)/add-vehicle')}>
+            <TouchableOpacity
+              style={styles.addBtn}
+              onPress={() => router.push('/(tabs)/add-vehicle')}
+              accessibilityLabel="Ajouter un véhicule"
+              accessibilityRole="button"
+            >
               <Text style={styles.addBtnText}>＋</Text>
             </TouchableOpacity>
           </View>
@@ -135,18 +142,20 @@ export default function VehiclesScreen() {
                 : { backgroundColor: '#1A160A', borderColor: '#F59E0B' }
               ]}
               onPress={() => router.push('/(tabs)/reminders')}
+              accessibilityLabel={`Rappel : ${urgentReminder.maintenance_types?.name} sur ${urgentReminder.vehicles?.brand} ${urgentReminder.vehicles?.model}`}
+              accessibilityRole="button"
             >
               <View style={styles.alertLeft}>
                 <Text style={styles.alertEmoji}>{getUrgency(urgentReminder) === 'overdue' ? '⚠️' : '🔔'}</Text>
                 <View>
-                  <Text style={[styles.alertTitle, { color: c.textPrimary }]}>
+                  <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.alertTitle, { color: c.textPrimary }]}>
                     {getUrgency(urgentReminder) === 'overdue' ? 'Entretien en retard !' : 'Entretien bientôt dû'}
                   </Text>
-                  <Text style={[styles.alertSub, { color: c.textSecondary }]}>
+                  <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.alertSub, { color: c.textSecondary }]}>
                     {urgentReminder.maintenance_types?.name} — {urgentReminder.vehicles?.brand} {urgentReminder.vehicles?.model}
                   </Text>
                   {overdueCount + soonCount > 1 && (
-                    <Text style={[styles.alertMore, { color: c.textMuted }]}>
+                    <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.alertMore, { color: c.textMuted }]}>
                       +{overdueCount + soonCount - 1} autre{overdueCount + soonCount - 1 > 1 ? 's' : ''} rappel{overdueCount + soonCount - 1 > 1 ? 's' : ''}
                     </Text>
                   )}
@@ -159,53 +168,78 @@ export default function VehiclesScreen() {
           {/* Stats rapides */}
           {vehicles.length > 0 && (
             <View style={styles.statsRow}>
-              <TouchableOpacity style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]} onPress={() => router.push('/(tabs)/maintenance')}>
+              <TouchableOpacity
+                style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]}
+                onPress={() => router.push('/(tabs)/maintenance')}
+                accessibilityLabel="Voir l'entretien global"
+                accessibilityRole="button"
+              >
                 <Text style={styles.statEmoji}>🔧</Text>
-                <Text style={[styles.statLabel, { color: c.textMuted }]}>Entretien</Text>
+                <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.statLabel, { color: c.textMuted }]}>Entretien</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]} onPress={() => router.push('/(tabs)/reminders')}>
+              <TouchableOpacity
+                style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]}
+                onPress={() => router.push('/(tabs)/reminders')}
+                accessibilityLabel={reminders.length > 0 ? `${reminders.length} rappel${reminders.length > 1 ? 's' : ''}` : 'Voir les rappels'}
+                accessibilityRole="button"
+              >
                 <Text style={styles.statEmoji}>🔔</Text>
-                <Text style={[styles.statLabel, { color: c.textMuted }]}>
+                <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.statLabel, { color: c.textMuted }]}>
                   {reminders.length > 0 ? `${reminders.length} rappel${reminders.length > 1 ? 's' : ''}` : 'Rappels'}
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]} onPress={() => router.push('/(tabs)/add-vehicle')}>
+              <TouchableOpacity
+                style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]}
+                onPress={() => router.push('/(tabs)/add-vehicle')}
+                accessibilityLabel="Ajouter un véhicule"
+                accessibilityRole="button"
+              >
                 <Text style={styles.statEmoji}>＋</Text>
-                <Text style={[styles.statLabel, { color: c.textMuted }]}>Ajouter</Text>
+                <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.statLabel, { color: c.textMuted }]}>Ajouter</Text>
               </TouchableOpacity>
             </View>
           )}
 
           {vehicles.length > 0 && (
-            <Text style={[styles.sectionTitle, { color: c.textMuted }]}>Mes véhicules</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.sectionTitle, { color: c.textMuted }]}>Mes véhicules</Text>
           )}
         </View>
       )}
       ListEmptyComponent={() => (
         <View style={styles.emptyState}>
           <Text style={styles.emptyEmoji}>🚗</Text>
-          <Text style={[styles.emptyTitle, { color: c.textPrimary }]}>Ajoute ton premier véhicule</Text>
-          <Text style={[styles.emptySubtitle, { color: c.textMuted }]}>Saisis ta plaque et on s'occupe du reste.</Text>
-          <TouchableOpacity style={styles.emptyBtn} onPress={() => router.push('/(tabs)/add-vehicle')}>
-            <Text style={styles.emptyBtnText}>Ajouter un véhicule</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.emptyTitle, { color: c.textPrimary }]}>Ajoute ton premier véhicule</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.emptySubtitle, { color: c.textMuted }]}>Saisis ta plaque et on s'occupe du reste.</Text>
+          <TouchableOpacity
+            style={styles.emptyBtn}
+            onPress={() => router.push('/(tabs)/add-vehicle')}
+            accessibilityLabel="Ajouter un véhicule"
+            accessibilityRole="button"
+          >
+            <Text maxFontSizeMultiplier={MAX_FONT} style={styles.emptyBtnText}>Ajouter un véhicule</Text>
           </TouchableOpacity>
         </View>
       )}
       renderItem={({ item }) => (
-        <TouchableOpacity style={[styles.card, { backgroundColor: c.card, borderColor: c.cardBorder }]} onPress={() => router.push(`/(tabs)/vehicle/${item.id}`)}>
+        <TouchableOpacity
+          style={[styles.card, { backgroundColor: c.card, borderColor: c.cardBorder }]}
+          onPress={() => router.push(`/(tabs)/vehicle/${item.id}`)}
+          accessibilityLabel={`${item.brand} ${item.model} ${item.year}, plaque ${item.license_plate}, ${item.current_mileage.toLocaleString('fr-FR')} kilomètres`}
+          accessibilityRole="button"
+        >
           <View style={styles.cardTop}>
             <View>
-              <Text style={[styles.cardBrand, { color: c.textPrimary }]}>{item.brand}</Text>
-              <Text style={[styles.cardModel, { color: c.textSecondary }]}>{item.model} · {item.year}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.cardBrand, { color: c.textPrimary }]}>{item.brand}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.cardModel, { color: c.textSecondary }]}>{item.model} · {item.year}</Text>
             </View>
             <View style={[styles.plateBadge, { backgroundColor: c.bg }]}>
-              <Text style={styles.plateText}>{item.license_plate}</Text>
+              <Text maxFontSizeMultiplier={MAX_FONT} style={styles.plateText}>{item.license_plate}</Text>
             </View>
           </View>
           <View style={styles.cardBottom}>
-            <Text style={[styles.cardMeta, { color: c.textMuted }]}>{FUEL_EMOJI[item.fuel_type] ?? '🔧'} {item.fuel_type}</Text>
-            <Text style={[styles.cardMeta, { color: c.textMuted }]}>🛣️ {item.current_mileage.toLocaleString('fr-FR')} km</Text>
-            {item.color ? <Text style={[styles.cardMeta, { color: c.textMuted }]}>🎨 {item.color}</Text> : null}
+            <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.cardMeta, { color: c.textMuted }]}>{FUEL_EMOJI[item.fuel_type] ?? '🔧'} {item.fuel_type}</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.cardMeta, { color: c.textMuted }]}>🛣️ {item.current_mileage.toLocaleString('fr-FR')} km</Text>
+            {item.color ? <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.cardMeta, { color: c.textMuted }]}>🎨 {item.color}</Text> : null}
           </View>
         </TouchableOpacity>
       )}
@@ -220,7 +254,7 @@ const styles = StyleSheet.create({
   header:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingTop: 60, paddingBottom: 16 },
   greeting:     { fontSize: 22, fontWeight: '700' },
   subtitle:     { fontSize: 13, marginTop: 2 },
-  addBtn:       { width: 40, height: 40, borderRadius: 20, backgroundColor: '#3B82F6', justifyContent: 'center', alignItems: 'center' },
+  addBtn:       { width: 44, height: 44, borderRadius: 22, backgroundColor: '#3B82F6', justifyContent: 'center', alignItems: 'center' },
   addBtnText:   { color: '#fff', fontSize: 22, lineHeight: 26 },
   alertCard:    { marginHorizontal: 24, marginBottom: 16, borderRadius: 14, padding: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1 },
   alertLeft:    { flexDirection: 'row', gap: 12, alignItems: 'center', flex: 1 },
@@ -230,7 +264,7 @@ const styles = StyleSheet.create({
   alertMore:    { fontSize: 11, marginTop: 2 },
   alertArrow:   { fontSize: 20 },
   statsRow:     { flexDirection: 'row', paddingHorizontal: 24, gap: 10, marginBottom: 20 },
-  statCard:     { flex: 1, borderRadius: 12, padding: 12, alignItems: 'center', gap: 4, borderWidth: 1 },
+  statCard:     { flex: 1, borderRadius: 12, padding: 12, alignItems: 'center', gap: 4, borderWidth: 1, minHeight: 44 },
   statEmoji:    { fontSize: 20 },
   statLabel:    { fontSize: 11, textAlign: 'center' },
   sectionTitle: { fontSize: 13, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, paddingHorizontal: 24, marginBottom: 10 },
@@ -238,7 +272,7 @@ const styles = StyleSheet.create({
   emptyEmoji:   { fontSize: 64 },
   emptyTitle:   { fontSize: 20, fontWeight: '700', textAlign: 'center' },
   emptySubtitle:{ fontSize: 14, textAlign: 'center', lineHeight: 20 },
-  emptyBtn:     { marginTop: 8, backgroundColor: '#3B82F6', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 14 },
+  emptyBtn:     { marginTop: 8, backgroundColor: '#3B82F6', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 14, minHeight: 44, justifyContent: 'center' },
   emptyBtnText: { color: '#fff', fontSize: 15, fontWeight: '600' },
   card:         { borderRadius: 16, padding: 16, borderWidth: 1, gap: 12, marginHorizontal: 24, marginBottom: 12 },
   cardTop:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },

@@ -23,6 +23,8 @@ const CATEGORY_EMOJI: Record<string, string> = {
   carrosserie: '🚗', autre: '🔧',
 };
 
+const MAX_FONT = 1.3;
+
 function getUrgency(reminder: Reminder): 'overdue' | 'soon' | 'ok' {
   const today = new Date();
   if (reminder.next_due_date) {
@@ -119,9 +121,9 @@ export default function RemindersScreen() {
   return (
     <View style={[styles.container, { backgroundColor: c.bg }]}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: c.textPrimary }]}>Rappels</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.title, { color: c.textPrimary }]}>Rappels</Text>
         {reminders.length > 0 && (
-          <Text style={[styles.subtitle, { color: c.textMuted }]}>
+          <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.subtitle, { color: c.textMuted }]}>
             {overdueCount > 0 ? `${overdueCount} en retard · ` : ''}
             {soonCount > 0    ? `${soonCount} bientôt · `      : ''}
             {reminders.length} au total
@@ -132,8 +134,8 @@ export default function RemindersScreen() {
       {reminders.length === 0 ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyEmoji}>✅</Text>
-          <Text style={[styles.emptyTitle, { color: c.textPrimary }]}>Tout est à jour !</Text>
-          <Text style={[styles.emptySubtitle, { color: c.textMuted }]}>Les rappels apparaîtront ici automatiquement après tes interventions.</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.emptyTitle, { color: c.textPrimary }]}>Tout est à jour !</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.emptySubtitle, { color: c.textMuted }]}>Les rappels apparaîtront ici automatiquement après tes interventions.</Text>
         </View>
       ) : (
         <FlatList
@@ -151,13 +153,19 @@ export default function RemindersScreen() {
             const badgeBg = urgency === 'overdue' ? '#7F1D1D' : urgency === 'soon' ? '#78350F' : c.bgSecondary;
 
             return (
-              <TouchableOpacity style={[styles.card, cardStyle]} onLongPress={() => handleDelete(item.id)} activeOpacity={1}>
+              <TouchableOpacity
+                style={[styles.card, cardStyle]}
+                onLongPress={() => handleDelete(item.id)}
+                activeOpacity={1}
+                accessibilityLabel={`${item.maintenance_types?.name}, ${item.vehicles?.brand} ${item.vehicles?.model}. ${formatDueInfo(item)}`}
+                accessibilityHint="Appui long pour supprimer"
+              >
                 <View style={styles.cardTop}>
                   <Text style={styles.cardEmoji}>{CATEGORY_EMOJI[item.maintenance_types?.category] ?? '🔧'}</Text>
                   <View style={styles.cardCenter}>
-                    <Text style={[styles.cardName, { color: c.textPrimary }]}>{item.maintenance_types?.name}</Text>
-                    <Text style={[styles.cardVehicle, { color: c.textMuted }]}>{item.vehicles?.brand} {item.vehicles?.model}</Text>
-                    <Text style={[styles.cardDue, { color: c.textSecondary }, urgency === 'overdue' && styles.cardDueOverdue]}>{formatDueInfo(item)}</Text>
+                    <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.cardName, { color: c.textPrimary }]}>{item.maintenance_types?.name}</Text>
+                    <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.cardVehicle, { color: c.textMuted }]}>{item.vehicles?.brand} {item.vehicles?.model}</Text>
+                    <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.cardDue, { color: c.textSecondary }, urgency === 'overdue' && styles.cardDueOverdue]}>{formatDueInfo(item)}</Text>
                   </View>
                   <View style={[styles.urgencyBadge, { backgroundColor: badgeBg }]}>
                     <Text style={[styles.urgencyText, urgency === 'ok' && { color: c.textMuted }]}>
@@ -166,15 +174,21 @@ export default function RemindersScreen() {
                   </View>
                 </View>
                 <View style={styles.cardActions}>
-                  <TouchableOpacity 
-                    style={[styles.actionBtnSnooze, { backgroundColor: c.bgSecondary, borderColor: c.cardBorder }]} 
+                  <TouchableOpacity
+                    style={[styles.actionBtnSnooze, { backgroundColor: c.bgSecondary, borderColor: c.cardBorder }]}
                     onPress={() => handleSnooze(item)}
+                    accessibilityLabel={`Reporter le rappel ${item.maintenance_types?.name}`}
+                    accessibilityRole="button"
                   >
-
-                    <Text style={[styles.actionBtnSnoozeText, { color: c.textSecondary }]}>Reporter</Text>
+                    <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.actionBtnSnoozeText, { color: c.textSecondary }]}>Reporter</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.actionBtnDone} onPress={() => handleDone(item)}>
-                    <Text style={styles.actionBtnDoneText}>✅ Fait !</Text>
+                  <TouchableOpacity
+                    style={styles.actionBtnDone}
+                    onPress={() => handleDone(item)}
+                    accessibilityLabel={`Marquer ${item.maintenance_types?.name} comme fait`}
+                    accessibilityRole="button"
+                  >
+                    <Text maxFontSizeMultiplier={MAX_FONT} style={styles.actionBtnDoneText}>✅ Fait !</Text>
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
@@ -205,11 +219,11 @@ const styles = StyleSheet.create({
   cardVehicle:         { fontSize: 12 },
   cardDue:             { fontSize: 12, marginTop: 2 },
   cardDueOverdue:      { color: '#F87171' },
-  urgencyBadge:        { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  urgencyBadge:        { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
   urgencyText:         { fontSize: 16 },
   cardActions:         { flexDirection: 'row', gap: 8 },
-  actionBtnSnooze:     { flex: 1, borderRadius: 8, paddingVertical: 8, alignItems: 'center', borderWidth: 1 },
+  actionBtnSnooze:     { flex: 1, borderRadius: 8, paddingVertical: 10, alignItems: 'center', borderWidth: 1, minHeight: 44 },
   actionBtnSnoozeText: { fontSize: 13, fontWeight: '500' },
-  actionBtnDone:       { flex: 1, backgroundColor: '#1E3A2F', borderRadius: 8, paddingVertical: 8, alignItems: 'center', borderWidth: 1, borderColor: '#166534' },
+  actionBtnDone:       { flex: 1, backgroundColor: '#1E3A2F', borderRadius: 8, paddingVertical: 10, alignItems: 'center', borderWidth: 1, borderColor: '#166534', minHeight: 44 },
   actionBtnDoneText:   { color: '#34D399', fontSize: 13, fontWeight: '600' },
 });

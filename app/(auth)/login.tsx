@@ -33,13 +33,21 @@ export default function LoginScreen() {
       <View style={styles.inner}>
 
         <View style={styles.header}>
-          <Text style={styles.logo}>🚗</Text>
-          <Text style={[styles.title, { color: c.textPrimary }]}>GarageIO</Text>
-          <Text style={[styles.subtitle, { color: c.textSecondary }]}>Ton carnet d'entretien intelligent</Text>
+          <Text style={styles.logo} accessibilityElementsHidden>🚗</Text>
+          <Text
+            style={[styles.title, { color: c.textPrimary }]}
+            maxFontSizeMultiplier={1.3}
+            accessibilityRole="header"
+          >
+            GarageIO
+          </Text>
+          <Text style={[styles.subtitle, { color: c.textSecondary }]} maxFontSizeMultiplier={1.3}>
+            Ton carnet d'entretien intelligent
+          </Text>
         </View>
 
         <View style={styles.form}>
-          <Text style={[styles.label, { color: c.textSecondary }]}>Email</Text>
+          <Text style={[styles.label, { color: c.textSecondary }]} maxFontSizeMultiplier={1.3}>Email</Text>
           <TextInput
             style={[styles.input, { backgroundColor: c.input, borderColor: c.inputBorder, color: c.textPrimary }]}
             placeholder="tu@email.com"
@@ -49,9 +57,11 @@ export default function LoginScreen() {
             autoComplete="email"
             value={email}
             onChangeText={setEmail}
+            maxFontSizeMultiplier={1.3}
+            accessibilityLabel="Adresse email"
           />
 
-          <Text style={[styles.label, { color: c.textSecondary }]}>Mot de passe</Text>
+          <Text style={[styles.label, { color: c.textSecondary }]} maxFontSizeMultiplier={1.3}>Mot de passe</Text>
           <TextInput
             style={[styles.input, { backgroundColor: c.input, borderColor: c.inputBorder, color: c.textPrimary }]}
             placeholder="••••••••"
@@ -60,24 +70,31 @@ export default function LoginScreen() {
             autoComplete="password"
             value={password}
             onChangeText={setPassword}
+            maxFontSizeMultiplier={1.3}
+            accessibilityLabel="Mot de passe"
           />
 
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleLogin}
             disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel="Se connecter"
+            accessibilityState={{ disabled: loading }}
           >
             {loading
               ? <ActivityIndicator color="#fff" />
-              : <Text style={styles.buttonText}>Se connecter</Text>
+              : <Text style={styles.buttonText} maxFontSizeMultiplier={1.3}>Se connecter</Text>
             }
           </TouchableOpacity>
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: c.textMuted }]}>Pas encore de compte ? </Text>
-          <Link href="/(auth)/register">
-            <Text style={styles.footerLink}>S'inscrire</Text>
+          <Text style={[styles.footerText, { color: c.textMuted }]} maxFontSizeMultiplier={1.3}>
+            Pas encore de compte ?{' '}
+          </Text>
+          <Link href="/(auth)/register" accessibilityRole="link" accessibilityLabel="S'inscrire, créer un compte">
+            <Text style={styles.footerLink} maxFontSizeMultiplier={1.3}>S'inscrire</Text>
           </Link>
         </View>
 
@@ -95,8 +112,8 @@ const styles = StyleSheet.create({
   subtitle:       { fontSize: 15 },
   form:           { gap: 8 },
   label:          { fontSize: 14, fontWeight: '500', marginBottom: 4, marginTop: 8 },
-  input:          { borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16 },
-  button:         { backgroundColor: '#3B82F6', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 16 },
+  input:          { borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, minHeight: 44 },
+  button:         { backgroundColor: '#3B82F6', borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 16, minHeight: 44 },
   buttonDisabled: { opacity: 0.6 },
   buttonText:     { color: '#fff', fontSize: 16, fontWeight: '600' },
   footer:         { flexDirection: 'row', justifyContent: 'center' },

@@ -16,6 +16,7 @@ interface UserProfile {
 }
 
 type ModalType = 'name' | 'email' | 'password' | null;
+const MAX_FONT = 1.3;
 
 export default function SettingsScreen() {
   const c = useColors();
@@ -109,14 +110,14 @@ export default function SettingsScreen() {
         <View style={styles.modalOverlay}>
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <View style={[styles.modalBox, { backgroundColor: c.card, borderColor: c.cardBorder }]}>
-              <Text style={[styles.modalTitle, { color: c.textPrimary }]}>{modalConfig.title}</Text>
-              <TextInput style={[styles.modalInput, { backgroundColor: c.bg, borderColor: c.inputBorder, color: c.textPrimary }]} value={modalValue} onChangeText={setModalValue} placeholder={modalConfig.placeholder} placeholderTextColor={c.textMuted} secureTextEntry={modalConfig.secure} autoFocus />
+              <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.modalTitle, { color: c.textPrimary }]}>{modalConfig.title}</Text>
+              <TextInput style={[styles.modalInput, { backgroundColor: c.bg, borderColor: c.inputBorder, color: c.textPrimary }]} value={modalValue} onChangeText={setModalValue} placeholder={modalConfig.placeholder} placeholderTextColor={c.textMuted} secureTextEntry={modalConfig.secure} autoFocus accessibilityLabel={modalConfig.title} />
               <View style={styles.modalButtons}>
-                <TouchableOpacity style={[styles.modalCancel, { backgroundColor: c.cardBorder }]} onPress={closeModal}>
-                  <Text style={[styles.modalCancelText, { color: c.textSecondary }]}>Annuler</Text>
+                <TouchableOpacity style={[styles.modalCancel, { backgroundColor: c.cardBorder }]} onPress={closeModal} accessibilityLabel="Annuler" accessibilityRole="button">
+                  <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.modalCancelText, { color: c.textSecondary }]}>Annuler</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.modalConfirm} onPress={handleModalSave} disabled={modalSaving}>
-                  {modalSaving ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.modalConfirmText}>Enregistrer</Text>}
+                <TouchableOpacity style={styles.modalConfirm} onPress={handleModalSave} disabled={modalSaving} accessibilityLabel="Enregistrer" accessibilityRole="button">
+                  {modalSaving ? <ActivityIndicator color="#fff" size="small" /> : <Text maxFontSizeMultiplier={MAX_FONT} style={styles.modalConfirmText}>Enregistrer</Text>}
                 </TouchableOpacity>
               </View>
             </View>
@@ -126,97 +127,97 @@ export default function SettingsScreen() {
 
       {/* Avatar */}
       <View style={styles.avatarBlock}>
-        <View style={styles.avatar}><Text style={styles.avatarText}>{profile?.full_name?.charAt(0).toUpperCase() ?? '?'}</Text></View>
-        <Text style={[styles.name, { color: c.textPrimary }]}>{profile?.full_name}</Text>
-        <Text style={[styles.email, { color: c.textMuted }]}>{profile?.email}</Text>
-        <Text style={[styles.memberSince, { color: c.textDisabled }]}>Membre depuis {memberSince}</Text>
+        <View style={styles.avatar} accessibilityLabel={`Avatar de ${profile?.full_name}`}><Text style={styles.avatarText}>{profile?.full_name?.charAt(0).toUpperCase() ?? '?'}</Text></View>
+        <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.name, { color: c.textPrimary }]}>{profile?.full_name}</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.email, { color: c.textMuted }]}>{profile?.email}</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.memberSince, { color: c.textDisabled }]}>Membre depuis {memberSince}</Text>
       </View>
 
       {/* Stats */}
       <View style={styles.statsRow}>
-        <View style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]}>
-          <Text style={[styles.statValue, { color: c.textPrimary }]}>{vehicles}</Text>
-          <Text style={[styles.statLabel, { color: c.textMuted }]}>véhicule{vehicles > 1 ? 's' : ''}</Text>
+        <View style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]} accessibilityLabel={`${vehicles} véhicule${vehicles > 1 ? 's' : ''}`}>
+          <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.statValue, { color: c.textPrimary }]}>{vehicles}</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.statLabel, { color: c.textMuted }]}>véhicule{vehicles > 1 ? 's' : ''}</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]}>
-          <Text style={[styles.statValue, { color: c.textPrimary }]}>{records}</Text>
-          <Text style={[styles.statLabel, { color: c.textMuted }]}>intervention{records > 1 ? 's' : ''}</Text>
+        <View style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]} accessibilityLabel={`${records} intervention${records > 1 ? 's' : ''}`}>
+          <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.statValue, { color: c.textPrimary }]}>{records}</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.statLabel, { color: c.textMuted }]}>intervention{records > 1 ? 's' : ''}</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]}>
-          <Text style={[styles.statValue, isPremium ? styles.premiumText : { color: c.textMuted }]}>{isPremium ? '⭐ Pro' : 'Free'}</Text>
-          <Text style={[styles.statLabel, { color: c.textMuted }]}>abonnement</Text>
+        <View style={[styles.statCard, { backgroundColor: c.card, borderColor: c.cardBorder }]} accessibilityLabel={isPremium ? 'Abonnement Premium' : 'Abonnement gratuit'}>
+          <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.statValue, isPremium ? styles.premiumText : { color: c.textMuted }]}>{isPremium ? '⭐ Pro' : 'Free'}</Text>
+          <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.statLabel, { color: c.textMuted }]}>abonnement</Text>
         </View>
       </View>
 
       {/* Premium banner */}
       {!isPremium && (
-        <TouchableOpacity style={styles.premiumBanner} onPress={() => Alert.alert('Bientôt disponible', 'Le module Premium arrive prochainement !')}>
-          <View><Text style={styles.premiumBannerTitle}>✨ Passer à Premium</Text><Text style={styles.premiumBannerSub}>Suivi budgétaire · Coût/km · 3€/mois</Text></View>
+        <TouchableOpacity style={styles.premiumBanner} onPress={() => Alert.alert('Bientôt disponible', 'Le module Premium arrive prochainement !')} accessibilityLabel="Passer à Premium, bientôt disponible" accessibilityRole="button">
+          <View><Text maxFontSizeMultiplier={MAX_FONT} style={styles.premiumBannerTitle}>✨ Passer à Premium</Text><Text maxFontSizeMultiplier={MAX_FONT} style={styles.premiumBannerSub}>Suivi budgétaire · Coût/km · 3€/mois</Text></View>
           <Text style={styles.premiumBannerArrow}>→</Text>
         </TouchableOpacity>
       )}
 
       {/* Compte */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: c.textMuted }]}>Compte</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.sectionTitle, { color: c.textMuted }]}>Compte</Text>
         <View style={[styles.menuCard, { backgroundColor: c.card, borderColor: c.cardBorder }]}>
-          <TouchableOpacity style={styles.menuItem} onPress={handleEditName}>
+          <TouchableOpacity style={styles.menuItem} onPress={handleEditName} accessibilityLabel={`Modifier le nom, actuellement ${profile?.full_name}`} accessibilityRole="button">
             <Text style={styles.menuItemIcon}>👤</Text>
-            <View style={styles.menuItemCenter}><Text style={[styles.menuItemLabel, { color: c.textMuted }]}>Nom</Text><Text style={[styles.menuItemValue, { color: c.textPrimary }]}>{profile?.full_name}</Text></View>
+            <View style={styles.menuItemCenter}><Text maxFontSizeMultiplier={MAX_FONT} style={[styles.menuItemLabel, { color: c.textMuted }]}>Nom</Text><Text maxFontSizeMultiplier={MAX_FONT} style={[styles.menuItemValue, { color: c.textPrimary }]}>{profile?.full_name}</Text></View>
             <Text style={[styles.menuItemArrow, { color: c.textDisabled }]}>›</Text>
           </TouchableOpacity>
           <View style={[styles.menuDivider, { backgroundColor: c.separator }]} />
-          <TouchableOpacity style={styles.menuItem} onPress={handleEditEmail}>
+          <TouchableOpacity style={styles.menuItem} onPress={handleEditEmail} accessibilityLabel={`Modifier l'email, actuellement ${profile?.email}`} accessibilityRole="button">
             <Text style={styles.menuItemIcon}>📧</Text>
-            <View style={styles.menuItemCenter}><Text style={[styles.menuItemLabel, { color: c.textMuted }]}>Email</Text><Text style={[styles.menuItemValue, { color: c.textPrimary }]}>{profile?.email}</Text></View>
+            <View style={styles.menuItemCenter}><Text maxFontSizeMultiplier={MAX_FONT} style={[styles.menuItemLabel, { color: c.textMuted }]}>Email</Text><Text maxFontSizeMultiplier={MAX_FONT} style={[styles.menuItemValue, { color: c.textPrimary }]}>{profile?.email}</Text></View>
             <Text style={[styles.menuItemArrow, { color: c.textDisabled }]}>›</Text>
           </TouchableOpacity>
           <View style={[styles.menuDivider, { backgroundColor: c.separator }]} />
-          <TouchableOpacity style={styles.menuItem} onPress={handleChangePassword}>
+          <TouchableOpacity style={styles.menuItem} onPress={handleChangePassword} accessibilityLabel="Modifier le mot de passe" accessibilityRole="button">
             <Text style={styles.menuItemIcon}>🔒</Text>
-            <View style={styles.menuItemCenter}><Text style={[styles.menuItemLabel, { color: c.textMuted }]}>Mot de passe</Text><Text style={[styles.menuItemValue, { color: c.textPrimary }]}>••••••••</Text></View>
+            <View style={styles.menuItemCenter}><Text maxFontSizeMultiplier={MAX_FONT} style={[styles.menuItemLabel, { color: c.textMuted }]}>Mot de passe</Text><Text maxFontSizeMultiplier={MAX_FONT} style={[styles.menuItemValue, { color: c.textPrimary }]}>••••••••</Text></View>
             <Text style={[styles.menuItemArrow, { color: c.textDisabled }]}>›</Text>
           </TouchableOpacity>
           <View style={[styles.menuDivider, { backgroundColor: c.separator }]} />
-          <View style={styles.menuItem}>
+          <View style={styles.menuItem} accessibilityLabel={`Notifications ${notifEnabled ? 'activées' : 'désactivées'}`}>
             <Text style={styles.menuItemIcon}>🔔</Text>
-            <View style={styles.menuItemCenter}><Text style={[styles.menuItemLabel, { color: c.textMuted }]}>Notifications</Text><Text style={[styles.menuItemValue, { color: c.textPrimary }]}>{notifEnabled ? 'Activées' : 'Désactivées'}</Text></View>
-            <Switch value={notifEnabled} onValueChange={setNotifEnabled} trackColor={{ false: c.cardBorder, true: '#3B82F6' }} thumbColor="#fff" />
+            <View style={styles.menuItemCenter}><Text maxFontSizeMultiplier={MAX_FONT} style={[styles.menuItemLabel, { color: c.textMuted }]}>Notifications</Text><Text maxFontSizeMultiplier={MAX_FONT} style={[styles.menuItemValue, { color: c.textPrimary }]}>{notifEnabled ? 'Activées' : 'Désactivées'}</Text></View>
+            <Switch value={notifEnabled} onValueChange={setNotifEnabled} trackColor={{ false: c.cardBorder, true: '#3B82F6' }} thumbColor="#fff" accessibilityLabel="Activer ou désactiver les notifications" />
           </View>
         </View>
       </View>
 
       {/* App */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: c.textMuted }]}>Application</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.sectionTitle, { color: c.textMuted }]}>Application</Text>
         <View style={[styles.menuCard, { backgroundColor: c.card, borderColor: c.cardBorder }]}>
-          <TouchableOpacity style={styles.menuItem} onPress={() => Linking.openURL('https://apps.apple.com/app/id6780651856')}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => Linking.openURL('https://apps.apple.com/app/id6780651856')} accessibilityLabel="Noter l'application sur l'App Store" accessibilityRole="link">
             <Text style={styles.menuItemIcon}>⭐</Text>
-            <Text style={[styles.menuItemLabel, { color: c.textPrimary }]}>Noter l'application</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.menuItemLabel, { color: c.textPrimary }]}>Noter l'application</Text>
             <Text style={[styles.menuItemArrow, { color: c.textDisabled }]}>›</Text>
           </TouchableOpacity>
           <View style={[styles.menuDivider, { backgroundColor: c.separator }]} />
-          <TouchableOpacity style={styles.menuItem} onPress={() => Linking.openURL('mailto:support@garageio.app')}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => Linking.openURL('mailto:support@garageio.app')} accessibilityLabel="Nous contacter par email" accessibilityRole="link">
             <Text style={styles.menuItemIcon}>📩</Text>
-            <Text style={[styles.menuItemLabel, { color: c.textPrimary }]}>Nous contacter</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.menuItemLabel, { color: c.textPrimary }]}>Nous contacter</Text>
             <Text style={[styles.menuItemArrow, { color: c.textDisabled }]}>›</Text>
           </TouchableOpacity>
           <View style={[styles.menuDivider, { backgroundColor: c.separator }]} />
-          <TouchableOpacity style={styles.menuItem} onPress={() => Linking.openURL('https://raw.githubusercontent.com/NicoBen68/garageio/main/PRIVACY_POLICY.md')}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => Linking.openURL('https://raw.githubusercontent.com/NicoBen68/garageio/main/PRIVACY_POLICY.md')} accessibilityLabel="Lire la politique de confidentialité" accessibilityRole="link">
             <Text style={styles.menuItemIcon}>📄</Text>
-            <Text style={[styles.menuItemLabel, { color: c.textPrimary }]}>Politique de confidentialité</Text>
+            <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.menuItemLabel, { color: c.textPrimary }]}>Politique de confidentialité</Text>
             <Text style={[styles.menuItemArrow, { color: c.textDisabled }]}>›</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      <TouchableOpacity style={[styles.signOutBtn, { backgroundColor: c.card, borderColor: c.cardBorder }]} onPress={handleSignOut}>
-        <Text style={styles.signOutText}>Se déconnecter</Text>
+      <TouchableOpacity style={[styles.signOutBtn, { backgroundColor: c.card, borderColor: c.cardBorder }]} onPress={handleSignOut} accessibilityLabel="Se déconnecter" accessibilityRole="button">
+        <Text maxFontSizeMultiplier={MAX_FONT} style={styles.signOutText}>Se déconnecter</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteAccount}>
-        <Text style={[styles.deleteText, { color: c.textDisabled }]}>Supprimer mon compte</Text>
+      <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteAccount} accessibilityLabel="Supprimer mon compte" accessibilityRole="button" accessibilityHint="Action irréversible">
+        <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.deleteText, { color: c.textDisabled }]}>Supprimer mon compte</Text>
       </TouchableOpacity>
-      <Text style={[styles.version, { color: c.cardBorder }]}>GarageIO v1.0.0</Text>
+      <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.version, { color: c.cardBorder }]}>GarageIO v1.0.0</Text>
 
     </ScrollView>
   );
@@ -237,23 +238,23 @@ const styles = StyleSheet.create({
   statValue:          { fontSize: 18, fontWeight: '700' },
   statLabel:          { fontSize: 11, marginTop: 2, textAlign: 'center' },
   premiumText:        { color: '#F59E0B' },
-  premiumBanner:      { backgroundColor: '#1D4ED8', borderRadius: 14, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  premiumBanner:      { backgroundColor: '#1D4ED8', borderRadius: 14, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', minHeight: 44 },
   premiumBannerTitle: { fontSize: 15, fontWeight: '700', color: '#fff' },
   premiumBannerSub:   { fontSize: 12, color: '#BFDBFE', marginTop: 2 },
   premiumBannerArrow: { fontSize: 20, color: '#fff' },
   section:            { gap: 8 },
   sectionTitle:       { fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
   menuCard:           { borderRadius: 14, borderWidth: 1, overflow: 'hidden' },
-  menuItem:           { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
+  menuItem:           { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12, minHeight: 44 },
   menuItemIcon:       { fontSize: 18, width: 24 },
   menuItemCenter:     { flex: 1 },
   menuItemLabel:      { fontSize: 13 },
   menuItemValue:      { fontSize: 15, marginTop: 1 },
   menuItemArrow:      { fontSize: 18 },
   menuDivider:        { height: 1, marginLeft: 50 },
-  signOutBtn:         { borderRadius: 12, paddingVertical: 14, alignItems: 'center', borderWidth: 1 },
+  signOutBtn:         { borderRadius: 12, paddingVertical: 14, alignItems: 'center', borderWidth: 1, minHeight: 44 },
   signOutText:        { color: '#F87171', fontSize: 15, fontWeight: '600' },
-  deleteBtn:          { alignItems: 'center', paddingVertical: 8 },
+  deleteBtn:          { alignItems: 'center', paddingVertical: 8, minHeight: 44, justifyContent: 'center' },
   deleteText:         { fontSize: 13 },
   version:            { textAlign: 'center', fontSize: 12 },
   modalOverlay:       { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', padding: 24 },
@@ -261,8 +262,8 @@ const styles = StyleSheet.create({
   modalTitle:         { fontSize: 18, fontWeight: '700' },
   modalInput:         { borderRadius: 10, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15 },
   modalButtons:       { flexDirection: 'row', gap: 12 },
-  modalCancel:        { flex: 1, borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
+  modalCancel:        { flex: 1, borderRadius: 10, paddingVertical: 12, alignItems: 'center', minHeight: 44 },
   modalCancelText:    { fontWeight: '600' },
-  modalConfirm:       { flex: 1, backgroundColor: '#3B82F6', borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
+  modalConfirm:       { flex: 1, backgroundColor: '#3B82F6', borderRadius: 10, paddingVertical: 12, alignItems: 'center', minHeight: 44 },
   modalConfirmText:   { color: '#fff', fontWeight: '600' },
 });
