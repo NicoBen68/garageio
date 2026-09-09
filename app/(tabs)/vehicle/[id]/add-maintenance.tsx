@@ -120,6 +120,7 @@ export default function AddMaintenanceScreen() {
     }
   };
 
+  // FIX : toutes les options naviguent bien avec router.back() après saveReminder
   const showReminderChoice = async (typeId: string, mileageAtService: number | null) => {
     const { data: typeData } = await supabase.from('maintenance_types').select('default_interval_months, default_interval_km').eq('id', typeId).single();
     let autoLabel = '';
@@ -131,14 +132,28 @@ export default function AddMaintenanceScreen() {
     setReminderMileage(mileageAtService);
 
     if (Platform.OS === 'ios') {
-      const options: any[] = [{ text: 'Sans rappel', onPress: () => {} }];
-      if (autoLabel) options.push({ text: `✅ Auto (${autoLabel})`, onPress: () => saveReminder(typeId, null, mileageAtService, true) });
+      const options: any[] = [
+        {
+          text: 'Sans rappel',
+          onPress: () => router.back(), // FIX : navigue même sans rappel
+        },
+      ];
+      if (autoLabel) {
+        options.push({
+          text: `✅ Auto (${autoLabel})`,
+          onPress: async () => { await saveReminder(typeId, null, mileageAtService, true); router.back(); },
+        });
+      }
       options.push({
         text: '📅 Date personnalisée',
         onPress: () => Alert.prompt('Rappel personnalisé', 'Date (JJ/MM/AAAA)', async (val) => {
-          if (!val) return;
+          if (!val) { router.back(); return; } // FIX : navigue même si annulé
           const parts = val.split('/');
-          if (parts.length === 3) { const d = `${parts[2]}-${parts[1]}-${parts[0]}`; await saveReminder(typeId, d, mileageAtService, false); }
+          if (parts.length === 3) {
+            const d = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            await saveReminder(typeId, d, mileageAtService, false);
+          }
+          router.back();
         }, 'plain-text'),
       });
       Alert.alert('🔔 Rappel prochain entretien', autoLabel ? `Recommandé : ${autoLabel}` : 'Aucun intervalle par défaut pour ce type.', options);
@@ -158,8 +173,16 @@ export default function AddMaintenanceScreen() {
     setCustomReminderModal(false);
     if (customReminderValue.trim()) {
       const parts = customReminderValue.trim().split('/');
-      if (parts.length === 3) { const d = `${parts[2]}-${parts[1]}-${parts[0]}`; await saveReminder(reminderTypeId, d, reminderMileage, false); }
+      if (parts.length === 3) {
+        const d = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        await saveReminder(reminderTypeId, d, reminderMileage, false);
+      }
     }
+    router.back();
+  };
+
+  const handleReminderNoReminder = () => {
+    setCustomReminderModal(false);
     router.back();
   };
 
@@ -175,7 +198,11 @@ export default function AddMaintenanceScreen() {
     if (mileageVal) await supabase.from('vehicles').update({ current_mileage: mileageVal }).eq('id', id);
     setSaving(false);
     if (error) { Alert.alert('Erreur', error.message); return; }
-    await showReminderChoice(selectedType.id, mileageVal);
+    // FIX : confirmation visuelle avant le choix du rappel
+    Alert.alert('✅ Intervention enregistrée !', 'Veux-tu définir un rappel pour le prochain entretien ?', [
+      { text: 'Non merci', onPress: () => router.back() },
+      { text: 'Oui', onPress: () => showReminderChoice(selectedType.id, mileageVal) },
+    ]);
   };
 
   const handleDeleteType = (type: MaintenanceType) => {
@@ -311,7 +338,7 @@ export default function AddMaintenanceScreen() {
             />
             <TouchableOpacity
               style={[styles.modalConfirm, { backgroundColor: c.cardBorder }]}
-              onPress={() => { setCustomReminderModal(false); router.back(); }}
+              onPress={handleReminderNoReminder}
               accessibilityRole="button"
               accessibilityLabel="Enregistrer sans rappel"
             >

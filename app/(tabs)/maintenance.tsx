@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, SectionList,
-  ActivityIndicator, RefreshControl,
+  ActivityIndicator, RefreshControl, TouchableOpacity, Alert,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -61,6 +61,25 @@ export default function MaintenanceGlobalScreen() {
   useFocusEffect(useCallback(() => { setLoading(true); fetchRecords(); }, []));
   const onRefresh = () => { setRefreshing(true); fetchRecords(); };
 
+  // FIX : suppression depuis l'onglet global
+  const handleDelete = (record: MaintenanceRecord) => {
+    Alert.alert(
+      'Supprimer cette intervention ?',
+      `${record.maintenance_types?.name} — ${new Date(record.performed_at).toLocaleDateString('fr-FR')}\nCette action est irréversible.`,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Supprimer', style: 'destructive',
+          onPress: async () => {
+            await supabase.from('maintenance_records').delete().eq('id', record.id);
+            setRecords(prev => prev.filter(r => r.id !== record.id));
+            setTotalSpent(prev => prev - (record.amount ?? 0));
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) return <View style={[styles.centered, { backgroundColor: c.bg }]}><ActivityIndicator color="#3B82F6" size="large" /></View>;
 
   return (
@@ -108,12 +127,16 @@ export default function MaintenanceGlobalScreen() {
             </View>
           )}
           renderItem={({ item }) => (
-            <View
+            // FIX : TouchableOpacity avec appui long pour supprimer
+            <TouchableOpacity
               style={[styles.card, { backgroundColor: c.card, borderColor: c.cardBorder }]}
+              onLongPress={() => handleDelete(item)}
+              accessibilityRole="button"
               accessibilityLabel={`${item.maintenance_types?.name}, ${item.vehicles?.brand} ${item.vehicles?.model}, le ${new Date(item.performed_at).toLocaleDateString('fr-FR')}${item.amount ? `, ${item.amount} euros` : ''}`}
+              accessibilityHint="Appui long pour supprimer cette intervention"
             >
               <View style={styles.cardLeft}>
-                <Text style={styles.cardEmoji}>{CATEGORY_EMOJI[item.maintenance_types?.category] ?? '🔧'}</Text>
+                <Text style={styles.cardEmoji} accessibilityElementsHidden>{CATEGORY_EMOJI[item.maintenance_types?.category] ?? '🔧'}</Text>
               </View>
               <View style={styles.cardCenter}>
                 <Text maxFontSizeMultiplier={MAX_FONT} style={[styles.cardName, { color: c.textPrimary }]}>{item.maintenance_types?.name}</Text>
@@ -130,7 +153,7 @@ export default function MaintenanceGlobalScreen() {
               <View style={styles.cardRight}>
                 {item.amount ? <Text maxFontSizeMultiplier={MAX_FONT} style={styles.cardAmount}>{item.amount}€</Text> : null}
               </View>
-            </View>
+            </TouchableOpacity>
           )}
         />
       )}
@@ -156,7 +179,7 @@ const styles = StyleSheet.create({
   sectionHeader:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, marginTop: 8 },
   sectionHeaderText:   { fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
   sectionHeaderAmount: { fontSize: 13, fontWeight: '600', color: '#3B82F6' },
-  card:                { flexDirection: 'row', borderRadius: 14, padding: 14, borderWidth: 1, gap: 12, alignItems: 'center', marginBottom: 8 },
+  card:                { flexDirection: 'row', borderRadius: 14, padding: 14, borderWidth: 1, gap: 12, alignItems: 'center', marginBottom: 8, minHeight: 44 },
   cardLeft:            { width: 36, alignItems: 'center' },
   cardEmoji:           { fontSize: 22 },
   cardCenter:          { flex: 1, gap: 3 },
