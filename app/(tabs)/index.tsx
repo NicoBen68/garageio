@@ -33,7 +33,7 @@ const FUEL_EMOJI: Record<string, string> = {
   electrique: '⚡', gpl: '💨', autre: '🔧',
 };
 
-const MAX_FONT = 1.3; // Limite le zoom police à 130%
+const MAX_FONT = 1.3;
 
 function getUrgency(reminder: Reminder): 'overdue' | 'soon' | 'ok' {
   const today = new Date();
@@ -71,16 +71,33 @@ export default function VehiclesScreen() {
   const [reminders,  setReminders]  = useState<Reminder[]>([]);
   const [loading,    setLoading]    = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError,  setLoadError]  = useState(false);
 
   const fetchData = async () => {
-    const [vehiclesRes, remindersRes] = await Promise.all([
-      supabase.from('vehicles').select('*').eq('user_id', user!.id).eq('is_archived', false).order('created_at', { ascending: false }),
-      supabase.from('reminders').select('*, vehicles!inner(brand, model, current_mileage, user_id), maintenance_types(name, category)').eq('vehicles.user_id', user!.id).in('status', ['active', 'overdue']),
-    ]);
-    if (!vehiclesRes.error && vehiclesRes.data) setVehicles(vehiclesRes.data);
-    if (!remindersRes.error && remindersRes.data) setReminders(remindersRes.data);
-    setLoading(false);
-    setRefreshing(false);
+    setLoadError(false);
+    try {
+      // Timeout de 10 secondes pour éviter la roue infinie
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 10000)
+      );
+
+      const fetchPromise = Promise.all([
+        supabase.from('vehicles').select('*').eq('user_id', user!.id).eq('is_archived', false).order('created_at', { ascending: false }),
+        supabase.from('reminders').select('*, vehicles!inner(brand, model, current_mileage, user_id), maintenance_types(name, category)').eq('vehicles.user_id', user!.id).in('status', ['active', 'overdue']),
+      ]);
+
+      const [vehiclesRes, remindersRes] = await Promise.race([fetchPromise, timeout]) as any;
+
+      if (!vehiclesRes.error && vehiclesRes.data) setVehicles(vehiclesRes.data);
+      if (!remindersRes.error && remindersRes.data) setReminders(remindersRes.data);
+    } catch (e) {
+      // Timeout ou erreur réseau — on affiche quand même l'écran (vide)
+      setLoadError(true);
+    } finally {
+      // Toujours stopper le loading, quoi qu'il arrive
+      setLoading(false);
+      setRefreshing(false);
+    }
   };
 
   useFocusEffect(useCallback(() => {
@@ -133,6 +150,20 @@ export default function VehiclesScreen() {
               <Text style={styles.addBtnText}>＋</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Bannière erreur réseau */}
+          {loadError && (
+            <TouchableOpacity
+              style={styles.errorBanner}
+              onPress={onRefresh}
+              accessibilityRole="button"
+              accessibilityLabel="Erreur de connexion, appuyer pour réessayer"
+            >
+              <Text style={styles.errorBannerText} maxFontSizeMultiplier={MAX_FONT}>
+                ⚠️ Connexion lente — Appuie pour réessayer
+              </Text>
+            </TouchableOpacity>
+          )}
 
           {/* Widget rappels urgents */}
           {urgentReminder && (
@@ -256,6 +287,8 @@ const styles = StyleSheet.create({
   subtitle:     { fontSize: 13, marginTop: 2 },
   addBtn:       { width: 44, height: 44, borderRadius: 22, backgroundColor: '#3B82F6', justifyContent: 'center', alignItems: 'center' },
   addBtnText:   { color: '#fff', fontSize: 22, lineHeight: 26 },
+  errorBanner:  { marginHorizontal: 24, marginBottom: 12, borderRadius: 10, padding: 12, backgroundColor: '#1A1200', borderWidth: 1, borderColor: '#F59E0B' },
+  errorBannerText: { color: '#F59E0B', fontSize: 13, fontWeight: '600', textAlign: 'center' },
   alertCard:    { marginHorizontal: 24, marginBottom: 16, borderRadius: 14, padding: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1 },
   alertLeft:    { flexDirection: 'row', gap: 12, alignItems: 'center', flex: 1 },
   alertEmoji:   { fontSize: 24 },
