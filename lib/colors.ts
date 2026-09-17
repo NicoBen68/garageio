@@ -27,60 +27,129 @@ export const palette = {
   transparent: 'transparent',
 };
 
-export const dark = {
-  // Fonds
-  bg:          '#0F172A',
-  bgSecondary: '#162032',
-  card:        '#1E293B',
-  cardBorder:  '#334155',
-  input:       '#1E293B',
-  inputBorder: '#334155',
+// ── Glassmorphism tokens ─────────────────────────────────────────────────────
+export const glass = {
+  // Cards / surfaces verre
+  card:           'rgba(255,255,255,0.08)',
+  cardStrong:     'rgba(255,255,255,0.12)',
+  cardBorder:     'rgba(255,255,255,0.15)',
+  cardBorderSoft: 'rgba(255,255,255,0.08)',
+
+  // Inputs
+  input:          'rgba(255,255,255,0.06)',
+  inputBorder:    'rgba(255,255,255,0.18)',
+
+  // Tab bar
+  tabBar:         'rgba(10,15,30,0.75)',
+  tabBorder:      'rgba(255,255,255,0.08)',
+
+  // Blobs de fond dark
+  blobBlue:       '#3B82F6',
+  blobGreen:      '#22C55E',
 
   // Textes
-  textPrimary:   '#F8FAFC',
-  textSecondary: '#94A3B8',
-  textMuted:     '#64748B',
-  textDisabled:  '#475569',
+  textPrimary:    '#F8FAFC',
+  textSecondary:  'rgba(255,255,255,0.65)',
+  textMuted:      'rgba(255,255,255,0.38)',
+  textDisabled:   'rgba(255,255,255,0.25)',
 
-  // Éléments UI
-  separator:   '#334155',
-  tabBar:      '#1E293B',
-  tabBorder:   '#334155',
-  overlay:     'rgba(0,0,0,0.7)',
+  // Overlay & separator
+  separator:      'rgba(255,255,255,0.08)',
+  overlay:        'rgba(0,0,0,0.7)',
 
   // Statuts
-  success:     '#22C55E',
-  warning:     '#F59E0B',
-  error:       '#EF4444',
-  info:        '#3B82F6',
+  success:        '#22C55E',
+  warning:        '#F59E0B',
+  error:          '#EF4444',
+  info:           '#3B82F6',
+};
+
+// ── Glassmorphism light (fond clair, verre teinté) ───────────────────────────
+export const glassLight = {
+  card:           'rgba(255,255,255,0.65)',
+  cardStrong:     'rgba(255,255,255,0.80)',
+  cardBorder:     'rgba(100,130,200,0.18)',
+  cardBorderSoft: 'rgba(100,130,200,0.10)',
+
+  input:          'rgba(255,255,255,0.70)',
+  inputBorder:    'rgba(100,130,200,0.25)',
+
+  tabBar:         'rgba(248,250,252,0.80)',
+  tabBorder:      'rgba(100,130,200,0.15)',
+
+  blobBlue:       '#3B82F6',
+  blobGreen:      '#22C55E',
+
+  textPrimary:    '#0F172A',
+  textSecondary:  '#475569',
+  textMuted:      '#94A3B8',
+  textDisabled:   '#CBD5E1',
+
+  separator:      'rgba(100,130,200,0.12)',
+  overlay:        'rgba(0,0,0,0.4)',
+
+  success:        '#16A34A',
+  warning:        '#D97706',
+  error:          '#DC2626',
+  info:           '#2563EB',
+};
+
+// Fonds principaux (derrière les blobs)
+export const darkBg  = '#0a0f1e';
+export const lightBg = '#EFF4FF';
+
+export const dark = {
+  bg:          '#0a0f1e',
+  bgSecondary: '#0d1525',
+  card:        glass.card,
+  cardBorder:  glass.cardBorder,
+  input:       glass.input,
+  inputBorder: glass.inputBorder,
+  textPrimary:   glass.textPrimary,
+  textSecondary: glass.textSecondary,
+  textMuted:     glass.textMuted,
+  textDisabled:  glass.textDisabled,
+  separator:   glass.separator,
+  tabBar:      glass.tabBar,
+  tabBorder:   glass.tabBorder,
+  overlay:     glass.overlay,
+  success:     glass.success,
+  warning:     glass.warning,
+  error:       glass.error,
+  info:        glass.info,
+  // Glass extras
+  cardStrong:     glass.cardStrong,
+  cardBorderSoft: glass.cardBorderSoft,
+  blobBlue:       glass.blobBlue,
+  blobGreen:      glass.blobGreen,
+  isGlass:        true as const,
 };
 
 export const light = {
-  // Fonds
-  bg:          '#F8FAFC',
-  bgSecondary: '#F1F5F9',
-  card:        '#FFFFFF',
-  cardBorder:  '#E2E8F0',
-  input:       '#FFFFFF',
-  inputBorder: '#CBD5E1',
-
-  // Textes
-  textPrimary:   '#0F172A',
-  textSecondary: '#475569',
-  textMuted:     '#94A3B8',
-  textDisabled:  '#CBD5E1',
-
-  // Éléments UI
-  separator:   '#E2E8F0',
-  tabBar:      '#FFFFFF',
-  tabBorder:   '#E2E8F0',
-  overlay:     'rgba(0,0,0,0.5)',
-
-  // Statuts
-  success:     '#16A34A',
-  warning:     '#D97706',
-  error:       '#DC2626',
-  info:        '#2563EB',
+  bg:          '#EFF4FF',
+  bgSecondary: '#E8EFFE',
+  card:        glassLight.card,
+  cardBorder:  glassLight.cardBorder,
+  input:       glassLight.input,
+  inputBorder: glassLight.inputBorder,
+  textPrimary:   glassLight.textPrimary,
+  textSecondary: glassLight.textSecondary,
+  textMuted:     glassLight.textMuted,
+  textDisabled:  glassLight.textDisabled,
+  separator:   glassLight.separator,
+  tabBar:      glassLight.tabBar,
+  tabBorder:   glassLight.tabBorder,
+  overlay:     glassLight.overlay,
+  success:     glassLight.success,
+  warning:     glassLight.warning,
+  error:       glassLight.error,
+  info:        glassLight.info,
+  // Glass extras
+  cardStrong:     glassLight.cardStrong,
+  cardBorderSoft: glassLight.cardBorderSoft,
+  blobBlue:       glassLight.blobBlue,
+  blobGreen:      glassLight.blobGreen,
+  isGlass:        false as const,
 };
 
 export type ColorScheme = typeof dark;
